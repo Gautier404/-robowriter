@@ -28,8 +28,10 @@ TF_5 = TF(     0,          L4_sym,      0,   theta5_sym);
 TF_6 = TF(     0,          L5_sym,      0,       0);
 
 
-
+% base to end effector T
 TF_0to6 = simplify(TF_1*TF_2*TF_3*TF_4*TF_5*TF_6);
+
+% convert to function
 forwardKin = matlabFunction(TF_0to6);
 
 test = forwardKin(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
