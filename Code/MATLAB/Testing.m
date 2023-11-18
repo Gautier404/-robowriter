@@ -60,12 +60,19 @@ x_target = 250;
 y_target = -50;
 z_target = -65;
 
-tic
-for i = 1:300
-    i = i/100;
-    [theta1, theta2, theta3, theta4] = IK(x_target+i, y_target+i, z_target+i, L2, L4, pen_angle);
-end
-toc
+[theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle);
+
+theta1 = theta1*180/pi
+theta2 = theta2*180/pi
+theta3 = theta3*180/pi
+theta4 = theta4*180/pi
+
+% tic
+% for i = 1:300
+%     i = i/100;
+%     [theta1, theta2, theta3, theta4] = IK(x_target+i, y_target+i, z_target+i, L2, L4, pen_angle);
+% end
+% toc
 %% Function Definitions
 
 function T = TF(alpha,a,d,theta)
@@ -77,6 +84,18 @@ end
 
 % Inverse Kinematics
 function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle)
+
+    theta1_min = -55;
+    theta1_max = 55;
+    
+    theta2_min = -115;
+    theta2_max = 0;
+    
+    theta3_min = -108;
+    theta3_max = 0;
+    
+    theta4_min = -103;
+    theta4_max = 0;
 
     % This is an offset target that frame 4 should reach
     x = 0;      % recalculated later
@@ -106,5 +125,8 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     theta2 = theta2*pi/180;
     theta3 = theta3*pi/180;
     theta4 = theta4*pi/180;
-end
 
+    if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
+        error("at least one calculated motor angle out of bounds");
+    end
+end
