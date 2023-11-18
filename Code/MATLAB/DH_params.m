@@ -62,16 +62,16 @@ x_target = 250;
 y_target = -50;
 % ////////////////////////////////////////////////////////////////////////
 
-z = 0;
+% This is an offset target that frame 4 should reach
 x = 0;
 y = y_target;
-
 z = z_offset + L4*sind(129.75-90) + 25;
 
+% Link 1 simply needs to point in the direction of the target
 theta1_ik = atan2d(y_target, x_target);
 
+% Recalculate the adjusted offset target x & y coordinates based on theta1 angle
 x = x_target - (L4 * cosd(129.75-90)*abs(cosd(theta1_ik)));
-
 if theta1_ik > 0
     y = y_target - (L4 * cosd(129.75-90)*abs(sind(theta1_ik)));
 elseif theta1_ik < 0
@@ -79,14 +79,14 @@ elseif theta1_ik < 0
 end
 
 % straight-line distance to adjusted target
-l = sqrt(x^2+y^2+z^2);
+L = sqrt(x^2+y^2+z^2);
 
-theta2_ik = (90 - ( acosd(l/(2*L2)) + atan2d(z, sqrt(x^2+y^2)) )) * (-1);
-
-theta3_ik = -2 * acosd(l/(2*L2));
-
+% Purely geometrically derived
+theta2_ik = (90 - ( acosd(L/(2*L2)) + atan2d(z, sqrt(x^2+y^2)) )) * (-1);
+theta3_ik = -2 * acosd(L/(2*L2));
 theta4_ik = -1* (129.75 - abs(theta2_ik) - abs(theta3_ik));
 
+% Validate with forward kinematics
 testTip = forwardKin(L2,L3,L4,L5,theta1_ik*pi/180,theta2_ik*pi/180,theta3_ik*pi/180,theta4_ik*pi/180,theta5)
 
 %% Function Definitions

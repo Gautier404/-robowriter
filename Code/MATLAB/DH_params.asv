@@ -62,11 +62,12 @@ x_target = 250;
 y_target = -50;
 % ////////////////////////////////////////////////////////////////////////
 
-z = 0;
+% This is an offset target that frame 4 should reach
+
 x = 0;
 y = y_target;
 
-z = z_offset + L4*sind(129.75-90) + 25;
+
 
 theta1_ik = atan2d(y_target, x_target);
 
