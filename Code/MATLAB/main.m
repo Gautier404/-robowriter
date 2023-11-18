@@ -4,19 +4,6 @@ clc;
 
 %% CONSTANTS
 
-% MOTOR ANGLE LIMITS
-theta1_min = -55;
-theta1_max = 55;
-
-theta2_min = -115;
-theta2_max = 0;
-
-theta3_min = -108;
-theta3_max = 0;
-
-theta4_min = -103;
-theta4_max = 0;
-
 % Pen Angle
 pen_angle = 129.75;
 
@@ -28,11 +15,11 @@ L5 = 25;            % mm  [PEN EXTENTION LENGTH]
 
 % LINK ANGLES
 % theta 2, 3, 4 are w.r.t. upward vertical axis
-theta1 =  30 * pi / 180;       % rad [EDIT]
-theta2 = -30 * pi / 180;       % rad [EDIT]
-theta3 = -30 * pi / 180;       % rad [EDIT]
-theta4 = -30 * pi / 180;       % rad [EDIT]
-theta5 = -50.25 * pi / 180;       % rad
+theta1 =  30;       % deg [EDIT]
+theta2 = -30;       % deg [EDIT]
+theta3 = -30 ;      % deg [EDIT]
+theta4 = -30;       % deg [EDIT]
+theta5 = -50.25;    % deg
 
 %% Initialize
 initialize();
@@ -40,9 +27,6 @@ input('Press any key to continue!');
 
 
 %% Main
-
-
-% Move MX28_ID(1) to Theta1 angle
 
 for r = 1:5
 for pos = 0:15
@@ -62,22 +46,22 @@ terminate();
 %% FUNCTION DEFINITIONS
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-% FORWARD KINEMATICS
+% FORWARD KINEMATICS - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
     TF_1 = TF(     0,            0,         0,       theta1);
-    TF_2 = TF( sym(pi)/2,        0,         0,   sym(pi)/2 + theta2);
+    TF_2 = TF(    90,            0,         0,     90 + theta2);
     TF_3 = TF(     0,            L2,        0,       theta3);
     TF_4 = TF(     0,            L3,        0,       theta4);
     TF_5 = TF(     0,            L4,        0,       theta5);
     TF_6 = TF(     0,            L5,        0,           0);
     
     % base to end effector T
-    T = simplify(TF_1*TF_2*TF_3*TF_4*TF_5*TF_6);
+    T = TF_1*TF_2*TF_3*TF_4*TF_5*TF_6;
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-% INVERSE KINEMATICS
+% INVERSE KINEMATICS - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle)
 
@@ -91,7 +75,7 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     theta3_max = 0;
     
     theta4_min = -103;
-    theta4_max = 0;
+    theta4_max = 103;
 
     % This is an offset target that frame 4 should reach
     x = 0;      % recalculated later
@@ -117,22 +101,18 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     theta3 = -2 * acosd(L/(2*L2));
     theta4 = -1* (pen_angle - abs(theta2) - abs(theta3));
     
-    theta1 = theta1*pi/180;
-    theta2 = theta2*pi/180;
-    theta3 = theta3*pi/180;
-    theta4 = theta4*pi/180;
-
+    % Bound Checking
     if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
         error("at least one calculated motor angle out of bounds");
     end
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-% Calculate T Matrix
+% Calculate T Matrix - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function T = TF(alpha,a,d,theta)
-T = [cos(theta)            -sin(theta)            0           a
-     sin(theta)*cos(alpha) cos(theta)*cos(alpha) -sin(alpha) -sin(alpha)*d
-     sin(theta)*sin(alpha) cos(theta)*sin(alpha)  cos(alpha)  cos(alpha)*d
+T = [cosd(theta)                 -sind(theta)            0           a
+     sind(theta)*cosd(alpha) cosd(theta)*cosd(alpha) -sind(alpha) -sind(alpha)*d
+     sind(theta)*sind(alpha) cosd(theta)*sind(alpha)  cosd(alpha)  cosd(alpha)*d
      0 0 0 1];
 end

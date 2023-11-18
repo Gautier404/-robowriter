@@ -19,7 +19,7 @@ theta4_min = -103;
 theta4_max = 103;
 
 % Pen Angle
-pen_angle = 129.75; % deg
+pen_angle = 129.75;
 
 % LINK LENGTHS
 L2 = 140;           % mm
