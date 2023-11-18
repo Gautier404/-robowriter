@@ -1,8 +1,9 @@
-% MAE C163A/C263A Project
-% Team X
+%%
 clc;
+clear all;
+close;
 
-%% CONSTANTS
+%% Known Variables
 
 % MOTOR ANGLE LIMITS
 theta1_min = -55;
@@ -16,6 +17,9 @@ theta3_max = 0;
 
 theta4_min = -103;
 theta4_max = 0;
+
+% Pen Angle
+pen_angle = 129.75;
 
 % LINK LENGTHS
 L2 = 140;           % mm
@@ -32,36 +36,8 @@ theta3 = -30 * pi / 180;       % rad [EDIT]
 theta4 = -30 * pi / 180;       % rad [EDIT]
 theta5 = -50.25 * pi / 180;       % rad
 
-%% Initialize
-initialize();
-input('Press any key to continue!');
 
-
-%% Main
-
-
-% Move MX28_ID(1) to Theta1 angle
-
-for r = 1:5
-for pos = 0:15
-    p = pos*1024/4
-    for i = 2:6
-        write4ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_GOAL_POSITION, typecast(int32(p), 'uint32'));
-        pause(.05)
-    end
-end
-end
-
-%% Terminate
-input('Press any key to terminate!');
-terminate();
-
-
-%% FUNCTION DEFINITIONS
-
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-% FORWARD KINEMATICS
-%//////////////////////////////////////////////////////////////////////////////////////////////////
+%% Symbolic Forward Kinematics
 syms theta1_sym theta2_sym theta3_sym theta4_sym theta5_sym L2_sym L3_sym L4_sym L5_sym
 
 TF_1 = TF(     0,            0,         0,   theta1_sym);
@@ -79,21 +55,27 @@ forwardKin = matlabFunction(TF_0to6);
 
 PenTip = forwardKin(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5);
 
-function T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
-    TF_1 = TF(     0,            0,         0,   theta1_sym);
-    TF_2 = TF( sym(pi)/2,        0,         0,   sym(pi)/2 + theta2_sym);
-    TF_3 = TF(     0,          L2,      0,   theta3_sym);
-    TF_4 = TF(     0,          L3,      0,   theta4_sym);
-    TF_5 = TF(     0,          L4_sym,      0,   theta5_sym);
-    TF_6 = TF(     0,          L5_sym,      0,       0);
-    
-    % base to end effector T
-    TF_0to6 = simplify(TF_1*TF_2*TF_3*TF_4*TF_5*TF_6);
+
+x_target = 250;
+y_target = -50;
+z_target = -65;
+
+tic
+for i = 1:300
+    i = i/100;
+    [theta1, theta2, theta3, theta4] = IK(x_target+i, y_target+i, z_target+i, L2, L4, pen_angle);
+end
+toc
+%% Function Definitions
+
+function T = TF(alpha,a,d,theta)
+T = [cos(theta)            -sin(theta)            0           a
+     sin(theta)*cos(alpha) cos(theta)*cos(alpha) -sin(alpha) -sin(alpha)*d
+     sin(theta)*sin(alpha) cos(theta)*sin(alpha)  cos(alpha)  cos(alpha)*d
+     0 0 0 1];
 end
 
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-% INVERSE KINEMATICS
-%//////////////////////////////////////////////////////////////////////////////////////////////////
+% Inverse Kinematics
 function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle)
 
     % This is an offset target that frame 4 should reach
@@ -125,3 +107,4 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     theta3 = theta3*pi/180;
     theta4 = theta4*pi/180;
 end
+
