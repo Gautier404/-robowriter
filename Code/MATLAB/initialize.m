@@ -114,7 +114,7 @@ else
 end
 
 % Enable Dynamixel Torque
-for i = 2:6
+for i = 1:4
     write1ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_TORQUE_ENABLE, TORQUE_ENABLE);
 %     write4ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i),  MX28_MOVING_SPEED, typecast(int32(MOTOR_SPEED), 'uint32')); % Reducing Speed
 %     write2ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_POSITION_P, 700);

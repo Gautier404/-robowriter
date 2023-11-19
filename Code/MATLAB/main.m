@@ -4,8 +4,12 @@ clc;
 
 %% CONSTANTS
 
+% Paper level relative to frame 0 z axis
+z_paper = -118;         % mm
+z_lifted = z_paper + 5; % mm
+
 % Pen Angle
-pen_angle = 129.75;
+pen_angle = 129.75; % deg
 
 % LINK LENGTHS
 L2 = 140;           % mm
@@ -28,15 +32,12 @@ input('Press any key to continue!');
 
 %% Main
 
-for r = 1:5
-for pos = 0:15
-    p = pos*1024/4
-    for i = 2:6
-        write4ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_GOAL_POSITION, typecast(int32(p), 'uint32'));
-        pause(.05)
-    end
-end
-end
+% start at zero position
+Zero();
+
+% Move to center of paper, pen slightly lifted
+[x_curr, y_curr, z_curr] = MoveToTarget(260, 0, z_lifted, L2, L4, pen_angle);
+
 
 %% Terminate
 input('Press any key to terminate!');
@@ -103,8 +104,68 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     
     % Bound Checking
     if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
-        error("at least one calculated motor angle out of bounds");
+        terminate();
+        error("At least one calculated motor angle out of bounds. Motors terminated.");
     end
+end
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+% Move using motor angles - units: degrees and mm
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+function MoveWithTheta(theta1, theta2, theta3, theta4)
+    
+    theta = [theta1 theta2 theta3 theta4];
+    length(theta)
+    % Motor angle 0-4095
+    for i = 1:length(theta)
+        if theta(i) < 0
+            theta(i) = abs(theta(i)) / 360 * 4096;
+        elseif theta(i) > 0
+            theta(i) = 4096 - (abs(theta(i)) / 360 * 4096);
+        end
+        % Send command to motor
+        write4ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_GOAL_POSITION, typecast(int32(theta(i)), 'uint32'));
+        pause(.05)
+    end
+end
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+% Move motors to zero position - units: degrees and mm
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+function Zero()
+    MoveWithTheta(0, 0, 0, 0);
+end
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+% Move to target coordinates in an arbitrary path - units: degrees and mm
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+function [x_curr, y_curr, z_curr] = MoveToTarget(x_target, y_target, z_target, L2, L4, pen_angle)
+    [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle);
+    MoveWithTheta(theta1, theta2, theta3, theta4);
+
+    x_curr = x_target;
+    y_curr = y_target;
+    z_curr = z_target;
+end
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+% Moves in a straight line segment from (x1, y1, z1) to (x2, y2, z2)- units: degrees and mm
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle)
+    
+    dist = sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2);
+    steps = ceil(dist);
+    x_spacing = (x2-x1)/steps;
+    y_spacing = (y2-y1)/steps;
+    z_spacing = (z2-z1)/steps;
+
+    MoveToTarget(x1+x_spacing, y1+y_spacing, z1+z_spacing, L2, L4, pen_angle)
+    for i = 1:steps
+        MoveToTarget(x1+(x_spacing*(i)), y1+(y_spacing*(i)), z1+spacing*(i), L2, L4, pen_angle)
+    end
+    x_curr = x2;
+    y_curr = y2;
+    z_curr = z2;
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
