@@ -5,7 +5,7 @@ clc;
 %% CONSTANTS
 
 % Paper level relative to frame 0 z axis
-z_paper = -118;         % mm
+z_paper = -70;         % mm
 z_lifted = z_paper + 5; % mm
 
 % Pen Angle
@@ -33,10 +33,23 @@ input('Press any key to continue!');
 %% Main
 
 % start at zero position
-Zero();
+% Zero();
 
 % Move to center of paper, pen slightly lifted
-[x_curr, y_curr, z_curr] = MoveToTarget(260, 0, z_lifted, L2, L4, pen_angle);
+%[x_curr, y_curr, z_curr] = MoveToTarget(260, 0, z_lifted, L2, L4, pen_angle);
+
+
+
+x_target = 230;
+y_target = 50;
+z_target = -70;
+pause(5)
+[x_curr, y_curr, z_curr] = MoveToTarget(x_target, y_target, z_target, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, -95, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target+30, y_target-80, -95, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, z_target+50, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target-30, y_target+10, z_target+10, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+
 
 
 %% Terminate
@@ -107,25 +120,24 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
         terminate();
         error("At least one calculated motor angle out of bounds. Motors terminated.");
     end
+
+    theta1 = theta1 + 135.35;
+    theta2 = theta2 + 178.8;
+    theta3 = theta3 + 164;
+    theta4 = theta4 + 189.5;
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 % Move using motor angles - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-function MoveWithTheta(theta1, theta2, theta3, theta4)
+function MoveWithTheta(theta1, theta2, theta3, theta4, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     
     theta = [theta1 theta2 theta3 theta4];
     length(theta)
     % Motor angle 0-4095
     for i = 1:length(theta)
-        if theta(i) < 0
-            theta(i) = abs(theta(i)) / 360 * 4096;
-        elseif theta(i) > 0
-            theta(i) = 4096 - (abs(theta(i)) / 360 * 4096);
-        end
-        % Send command to motor
-        write4ByteTxRx(port_num, PROTOCOL_VERSION, MX28_ID(i), MX28_GOAL_POSITION, typecast(int32(theta(i)), 'uint32'));
-        pause(.05)
+        theta(i) = theta(i) / 360 * 4096;
+        write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(theta(i)), 'uint32'));
     end
 end
 
@@ -139,9 +151,9 @@ end
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 % Move to target coordinates in an arbitrary path - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-function [x_curr, y_curr, z_curr] = MoveToTarget(x_target, y_target, z_target, L2, L4, pen_angle)
+function [x_curr, y_curr, z_curr] = MoveToTarget(x_target, y_target, z_target, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle);
-    MoveWithTheta(theta1, theta2, theta3, theta4);
+    MoveWithTheta(theta1, theta2, theta3, theta4, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
 
     x_curr = x_target;
     y_curr = y_target;
@@ -151,7 +163,7 @@ end
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 % Moves in a straight line segment from (x1, y1, z1) to (x2, y2, z2)- units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle)
+function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     
     dist = sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2);
     steps = ceil(dist);
@@ -159,9 +171,10 @@ function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4,
     y_spacing = (y2-y1)/steps;
     z_spacing = (z2-z1)/steps;
 
-    MoveToTarget(x1+x_spacing, y1+y_spacing, z1+z_spacing, L2, L4, pen_angle)
+    MoveToTarget(x1+x_spacing, y1+y_spacing, z1+z_spacing, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     for i = 1:steps
-        MoveToTarget(x1+(x_spacing*(i)), y1+(y_spacing*(i)), z1+spacing*(i), L2, L4, pen_angle)
+        MoveToTarget(x1+(x_spacing*(i)), y1+(y_spacing*(i)), z1+z_spacing*(i), L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
+        
     end
     x_curr = x2;
     y_curr = y2;
