@@ -40,15 +40,15 @@ input('Press any key to continue!');
 
 
 
-x_target = 230;
-y_target = 50;
+x_target = 260;
+y_target = 70;
 z_target = -70;
-pause(5)
+pause(3)
 [x_curr, y_curr, z_curr] = MoveToTarget(x_target, y_target, z_target, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
-[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, -95, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
-[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target+30, y_target-80, -95, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
-[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, z_target+50, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
-[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target-30, y_target+10, z_target+10, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, -92, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target-60, y_target-80, -92, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, -92, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+[x_curr, y_curr, z_curr] = MoveStraight(x_curr, y_curr, z_curr, x_target, y_target, 0, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
 
 
 
