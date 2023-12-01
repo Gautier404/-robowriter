@@ -69,7 +69,7 @@ function T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
     TF_4 = TF(     0,            L3,        0,       theta4);
     TF_5 = TF(     0,            L4,        0,       theta5);
     TF_6 = TF(     0,            L5,        0,           0);
-    
+
     % base to end effector T
     T = TF_1*TF_2*TF_3*TF_4*TF_5*TF_6;
 end
@@ -81,13 +81,13 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
 
     theta1_min = -55;
     theta1_max = 55;
-    
+
     theta2_min = -115;
     theta2_max = 0;
-    
+
     theta3_min = -108;
     theta3_max = 0;
-    
+
     theta4_min = -103;
     theta4_max = 103;
 
@@ -95,10 +95,10 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     x = 0;      % recalculated later
     y = y_target;
     z = z_target + L4*sind(pen_angle-90) + 25;
-    
+
     % Link 1 simply needs to point in the direction of the target
     theta1 = atan2d(y_target, x_target);
-    
+
     % Recalculate the adjusted offset target x & y coordinates based on theta1 angle
     x = x_target - (L4 * cosd(pen_angle-90)*abs(cosd(theta1)));
     if theta1 > 0
@@ -106,15 +106,15 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     elseif theta1 < 0
         y = y_target + (L4 * cosd(129.75-90)*abs(sind(theta1)));
     end
-    
+
     % straight-line distance to adjusted target, used for calculations below
     L = sqrt(x^2+y^2+z^2);
-    
+
     % The rest is purely geometrically derived
     theta2 = (90 - ( acosd(L/(2*L2)) + atan2d(z, sqrt(x^2+y^2)) )) * (-1);
     theta3 = -2 * acosd(L/(2*L2));
     theta4 = -1* (pen_angle - abs(theta2) - abs(theta3));
-    
+
     % Bound Checking
     if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
         terminate();
@@ -131,7 +131,7 @@ end
 % Move using motor angles - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function MoveWithTheta(theta1, theta2, theta3, theta4, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
-    
+
     theta = [theta1 theta2 theta3 theta4];
     length(theta)
     % Motor angle 0-4095
@@ -164,7 +164,7 @@ end
 % Moves in a straight line segment from (x1, y1, z1) to (x2, y2, z2)- units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
-    
+
     dist = sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2);
     steps = ceil(dist);
     x_spacing = (x2-x1)/steps;
@@ -174,7 +174,7 @@ function [x_curr, y_curr, z_curr] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4,
     MoveToTarget(x1+x_spacing, y1+y_spacing, z1+z_spacing, L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     for i = 1:steps
         MoveToTarget(x1+(x_spacing*(i)), y1+(y_spacing*(i)), z1+z_spacing*(i), L2, L4, pen_angle, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
-        
+
     end
     x_curr = x2;
     y_curr = y2;

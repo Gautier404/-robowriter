@@ -1,26 +1,12 @@
-%%
+% MAE C163A/C263A Project
+% Team X
 clc;
-clear all;
-close;
 
-%% Known Variables
+%% CONSTANTS
 
 % Paper level relative to frame 0 z axis
-z_paper = -118;         % mm
+z_paper = -70;         % mm
 z_lifted = z_paper + 5; % mm
-
-% MOTOR ANGLE LIMITS
-theta1_min = -55;
-theta1_max = 55;
-
-theta2_min = -115;
-theta2_max = 0;
-
-theta3_min = -108;
-theta3_max = 0;
-
-theta4_min = -103;
-theta4_max = 103;
 
 % Pen Angle
 pen_angle = 129.75; % deg
@@ -31,7 +17,6 @@ L3 = 140;           % mm
 L4 = 40.389;        % mm
 L5 = 25;            % mm  [PEN EXTENTION LENGTH]
 
-
 % LINK ANGLES
 % theta 2, 3, 4 are w.r.t. upward vertical axis
 theta1 =  30;       % deg [EDIT]
@@ -40,23 +25,56 @@ theta3 = -30 ;      % deg [EDIT]
 theta4 = -30;       % deg [EDIT]
 theta5 = -50.25;    % deg
 
+%% Initialize
+initialize();
+input('Press any key to continue!');
+
+
 %% Main
 
-% TARGET POSITION
-x_target = 250;
-y_target = -50;
-z_target = -65;
+% start at zero position
+% Zero();
+
+% Move to center of paper, pen slightly lifted
+%[x_curr, y_curr, z_curr] = MoveToTarget(260, 0, z_lifted, L2, L4, pen_angle);
 
 
-[nums, x_new, y_new, z_new] = MoveStraight(x_target-10, y_target-10, z_target-10, x_target, y_target, z_target, L2, L4, pen_angle);
 
-nums
+x_target = 260;
+y_target = 70;
+z_target = -70;
+pause(3)
+
+%theta1 = ;
+
+theta1 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 1, ADDR_PRO_PRESENT_POSITION);
+theta2 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 2, ADDR_PRO_PRESENT_POSITION);
+theta3 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 3, ADDR_PRO_PRESENT_POSITION);
+theta4 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 4, ADDR_PRO_PRESENT_POSITION);
+
+theta1 = theta1 - 135.35;
+theta2 = theta2 - 178.8;
+theta3 = theta3 - 164;
+theta4 = theta4 - 189.5;
+
+T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5);
+x1_start = T(1,4);
+y1_start = T(2,4);
+z1_start = T(3,4);
+SendMotorCommands(nums, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
+
+[nums, x_new, y_new, z_new] = MoveStraight(x1_start, y1_start, z1_start, x_target, y_target, z_target, L2, L4, pen_angle);
+
+
+%% Terminate
+input('Press any key to terminate!');
+terminate();
 
 
 %% FUNCTION DEFINITIONS
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-% FORWARD KINEMATICS - units: degrees
+% FORWARD KINEMATICS - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
     TF_1 = TF(     0,            0,         0,       theta1);
@@ -74,8 +92,7 @@ end
 % INVERSE KINEMATICS - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 function thetas = IK(x_target, y_target, z_target, L2, L4, pen_angle)
-    
-    % Motor Rotation Limits (constrained by 3d part interferences)
+
     theta1_min = -55;
     theta1_max = 55;
     
@@ -114,12 +131,15 @@ function thetas = IK(x_target, y_target, z_target, L2, L4, pen_angle)
     
     % Bound Checking
     if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
-        error("at least one calculated motor angle out of bounds");
+        terminate();
+        error("At least one calculated motor angle out of bounds. Motors terminated.");
     end
+
     theta1 = theta1 + 135.35;
     theta2 = theta2 + 178.8;
     theta3 = theta3 + 164;
     theta4 = theta4 + 189.5;
+
     thetas = [theta1, theta2, theta3, theta4];
 end
 
@@ -147,7 +167,7 @@ function SendMotorCommands(nums, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     
     for i = 1:height(nums)
         for j = size(nums, 2)
-            %write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(nums(i,j)), 'uint32'));
+            write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(nums(i,j)), 'uint32'));
         end
     end
     
@@ -156,6 +176,10 @@ end
 
 function nums = ThetaToNums(thetas)
     nums = thetas / 360 * 4096;
+end
+
+function thetas = NumsToTheta(nums)
+    thetas = nums * 360 / 4096;
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
