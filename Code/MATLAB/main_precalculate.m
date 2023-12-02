@@ -40,30 +40,38 @@ input('Press any key to continue!');
 
 
 
-x_target = 260;
-y_target = 70;
-z_target = -70;
-pause(3)
+x_target = 240;
+y_target = 176;
+z_target = -48;
+pause(1)
 
-%theta1 = ;
+theta1 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 1, MX28_PRESENT_POSITION);
+theta2 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 2, MX28_PRESENT_POSITION);
+theta3 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 3, MX28_PRESENT_POSITION);
+theta4 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 4, MX28_PRESENT_POSITION);
 
-theta1 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 1, ADDR_PRO_PRESENT_POSITION);
-theta2 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 2, ADDR_PRO_PRESENT_POSITION);
-theta3 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 3, ADDR_PRO_PRESENT_POSITION);
-theta4 = read4ByteTxRx(port_num, PROTOCOL_VERSION, 4, ADDR_PRO_PRESENT_POSITION);
+theta1 = NumsToTheta(theta1);
+theta2 = NumsToTheta(theta2);
+theta3 = NumsToTheta(theta3);
+theta4 = NumsToTheta(theta4);
 
-theta1 = theta1 - 135.35;
-theta2 = theta2 - 178.8;
-theta3 = theta3 - 164;
-theta4 = theta4 - 189.5;
+theta1 = theta1 - 136.84;
+theta2 = theta2 - 178.06;
+theta3 = theta3 - 159.87;
+theta4 = theta4 - 95.01;
 
 T = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5);
+
 x1_start = T(1,4);
 y1_start = T(2,4);
 z1_start = T(3,4);
-SendMotorCommands(nums, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
 
-[nums, x_new, y_new, z_new] = MoveStraight(x1_start, y1_start, z1_start, x_target, y_target, z_target, L2, L4, pen_angle);
+%thetasIK = IK(x1_start, y1_start, z1_start, L2, L4, pen_angle);
+
+%[nums, x_new, y_new, z_new] = MoveLinear(x1_start, y1_start, z1_start, x_target, y_target, z_target, L2, L4, pen_angle);
+
+%nums
+%SendMotorCommands(nums, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION);
 
 
 %% Terminate
@@ -135,18 +143,18 @@ function thetas = IK(x_target, y_target, z_target, L2, L4, pen_angle)
         error("At least one calculated motor angle out of bounds. Motors terminated.");
     end
 
-    theta1 = theta1 + 135.35;
-    theta2 = theta2 + 178.8;
-    theta3 = theta3 + 164;
-    theta4 = theta4 + 189.5;
+    theta1 = theta1 + 136.84;
+    theta2 = theta2 + 178.06;
+    theta3 = theta3 + 159.87;
+    theta4 = theta4 + 95.01;
 
     thetas = [theta1, theta2, theta3, theta4];
 end
 
-function [nums, x_new, y_new, z_new] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle)
+function [nums, x_new, y_new, z_new] = MoveLinear(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle)
     
     dist = sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2);
-    steps = ceil(dist)*2;
+    steps = ceil(dist)*1;
     x_spacing = (x2-x1)/steps;
     y_spacing = (y2-y1)/steps;
     z_spacing = (z2-z1)/steps;
@@ -156,7 +164,7 @@ function [nums, x_new, y_new, z_new] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, 
         thetas_new = IK(x1+x_spacing*i, y1+y_spacing*i, z1+z_spacing*i, L2, L4, pen_angle);
         thetas = [thetas; thetas_new];
     end
-
+    thetas
     nums = ThetaToNums(thetas);
     x_new = x2;
     y_new = y2;
@@ -166,8 +174,8 @@ end
 function SendMotorCommands(nums, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     
     for i = 1:height(nums)
-        for j = size(nums, 2)
-            write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(nums(i,j)), 'uint32'));
+        for j = 1:size(nums, 2)
+            write4ByteTxRx(port_num, PROTOCOL_VERSION, j, MX28_GOAL_POSITION, typecast(int32(nums(i,j)), 'uint32'));
         end
     end
     

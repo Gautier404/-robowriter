@@ -121,10 +121,10 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
         error("At least one calculated motor angle out of bounds. Motors terminated.");
     end
 
-    theta1 = theta1 + 135.35;
-    theta2 = theta2 + 178.8;
-    theta3 = theta3 + 164;
-    theta4 = theta4 + 189.5;
+    theta1 = theta1 + 136;
+    theta2 = theta2 + 178;
+    theta3 = theta3 + 161;
+    theta4 = theta4 + 97.21;
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
