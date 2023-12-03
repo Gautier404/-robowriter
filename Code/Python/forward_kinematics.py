@@ -54,9 +54,9 @@ def forward_kinematics(theta1: float, theta2: float, theta3: float, theta4: floa
         t: a list of transformation matricies that maps the base frame to each joint.
     """
     t = [None] * 6
-    tf_1 = transformation_matrix(0, 0, 0, theta1)
+    tf_1 = transformation_matrix(0, 0, L0, theta1)
     t[0] = tf_1
-    tf_2 = transformation_matrix(90, 0, 0, theta2) #TODO: figure out why theta2 had 90 added to it
+    tf_2 = transformation_matrix(-90, 0, 0, theta2-90)
     t[1] = t[0] @ tf_2
     tf_3 = transformation_matrix(0, L2, 0, theta3)
     t[2] = t[1] @ tf_3

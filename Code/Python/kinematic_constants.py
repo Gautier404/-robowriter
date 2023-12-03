@@ -6,7 +6,7 @@ L3 = 140            # mm
 L4 = 40.389         # mm
 L5 = 25             # mm  [PEN EXTENTION LENGTH]
 
-THETA_5 =  -50.25      # degrees
+THETA_5 =  50.25      # degrees
 
 
 # Joint angle limits as defined by our kinematic model without offsets.

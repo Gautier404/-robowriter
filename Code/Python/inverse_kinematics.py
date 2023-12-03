@@ -1,6 +1,6 @@
 import numpy as np
 from kinematic_constants import *
-from static_model import plot_3d_robot_arm
+from animate_arm import animate_arm
 
 def generate_link_angles(pen_position: np.array):
     """
@@ -36,7 +36,7 @@ def generate_link_angles(pen_position: np.array):
     r2 = np.sqrt(x4**2 + y4**2 + (z4 - L0)**2)
     c3 = (r2**2 - L2**2 - L3**2) / (2 * L2 * L3)
     s3 = np.sqrt(1 - c3**2)
-    theta3 = np.degrees(np.arctan2(-s3, c3)) #this assumes that the triangle formed by link 2 and 3 has an obtuse side pointed up
+    theta3 = np.degrees(np.arctan2(s3, c3)) #this assumes that the triangle formed by link 2 and 3 has an obtuse side pointed up
 
     # Calculate theta 2
     alpha = np.degrees(np.arctan2(z4 - L0, np.sqrt(x4**2 + y4**2)))
@@ -46,14 +46,32 @@ def generate_link_angles(pen_position: np.array):
     theta2 = 90 - alpha - beta
 
     # Calculate theta 4
-    theta4 = -(90 + theta2 + theta3 + THETA_5)
+    theta4 = 180 - (theta2 + theta3 + THETA_5)
 
     return [theta1, theta2, theta3, theta4]
 
-if __name__ == "__main__":
-    pen_position = np.array([100, 100, 0])
-    link_angles = generate_link_angles(pen_position)
-    print(link_angles)
+def generate_angular_toolpath(cartesian_toolpath: np.array):
+    """
+    Outputs an array of link angles of the robot given a target pen tip position.
+    
+    parameters:
+        cartesian_toolpath: a 2D array of the x, y, z coordinates of the pen tip in mm 
+            in the base coordinate frame.
+    """
+    angular_toolpath = np.zeros((len(cartesian_toolpath), 4))
+    for i, position in enumerate(cartesian_toolpath):
+        angular_toolpath[i] = generate_link_angles(position)
+    return angular_toolpath
 
-    plot_3d_robot_arm(link_angles[0], link_angles[1], link_angles[2], link_angles[3])
+if __name__ == "__main__":
+    time_steps = 40
+    toolpath = np.array([
+        np.append(np.linspace(100, 100, time_steps), np.linspace(100, 200, time_steps)),
+        np.append(np.linspace(0, 200, time_steps), np.linspace(200, 200, time_steps)),
+        np.append(np.linspace(0, 0, time_steps), np.linspace(0, 0, time_steps))
+    ])
+    toolpath = toolpath.T
+    angular_toolpath = generate_angular_toolpath(toolpath)
+    animate_arm(angular_toolpath)
+
     
