@@ -7,11 +7,10 @@ import pandas as pd
 
 def plot_3d_robot_arm(theta1, theta2, theta3, theta4):
     """
-    takes in the angles of th robot arm and plots its configuration using plotly
+    takes in the angles of the robot arm and plots its configuration using plotly
     """
 
     # Calculate forward kinematics
-
     link_coordinates = generate_link_coordinates(theta1, theta2, theta3, theta4)
 
 

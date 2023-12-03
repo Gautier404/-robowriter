@@ -56,7 +56,7 @@ def forward_kinematics(theta1: float, theta2: float, theta3: float, theta4: floa
     t = [None] * 6
     tf_1 = transformation_matrix(0, 0, 0, theta1)
     t[0] = tf_1
-    tf_2 = transformation_matrix(90, 0, 0, 90 + theta2)
+    tf_2 = transformation_matrix(90, 0, 0, theta2) #TODO: figure out why theta2 had 90 added to it
     t[1] = t[0] @ tf_2
     tf_3 = transformation_matrix(0, L2, 0, theta3)
     t[2] = t[1] @ tf_3
@@ -122,9 +122,9 @@ if __name__ == "__main__":
     # pylint: disable=E1136  # pylint/issues/3139
 
     T1 = 45
-    T2 = 30
-    T3 = -60
-    T4 = 90
+    T2 = 55
+    T3 = 0
+    T4 = 0
 
     resulting_transformation = forward_kinematics(T1, T2, T3, T4)
     print("Resulting Transformation Matrix:")
