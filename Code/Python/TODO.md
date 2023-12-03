@@ -11,5 +11,3 @@
 - How do we know where to place the toolpath?
 - How to scale it?
 - How to divide up long motions into shorter interpolated paths
-
-
