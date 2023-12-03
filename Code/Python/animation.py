@@ -1,50 +1,124 @@
 import numpy as np
 import plotly.graph_objects as go
-from forward_kinematics import forward_kinematics
+from forward_kinematics import generate_link_coordinates
 
-def plot_3d_robot_arm_animation():
-    # pylint: disable=E1136  # pylint/issues/3139
-    
-    # Example angles (in degrees)
-    theta1 = 0
-    theta2 = 0
-    theta3 = 0
-    theta4 = 0
+# Time steps
+time_steps = np.linspace(0, 45, 46)  # Adjust the range and step size as needed
 
-    # Create figure
-    fig = go.Figure()
+# Initialize empty lists for x, y, and z coordinates
+x = []
+y = []
+z = []
 
-    # Set layout
-    fig.update_layout(title='3D Robot Arm Configuration',
-                      scene=dict(aspectmode='data'),
-                      showlegend=True)
+# Generate link coordinates for each time step
+for t in time_steps:
+    link_coordinates = generate_link_coordinates(t, 0, 45, 45)
+    x.append(link_coordinates['x'])
+    y.append(link_coordinates['y'])
+    z.append(link_coordinates['z'])
 
-    frames = 36  # Number of frames for animation
+# find maximum & minimum x, y & z values of all coordinates for axis ranges
+padding = 50
+max_x = max([max(i) for i in x]) + padding
+min_x = min([min(i) for i in x]) - padding
+max_y = max([max(i) for i in y]) + padding
+min_y = min([min(i) for i in y]) - padding
+max_z = max([max(i) for i in z]) + padding
+min_z = min([min(i) for i in z])
 
-    # Add frames to the figure
-    for frame in range(frames):
-        theta1 += 10  # Increment angle for each frame
-        transformation_matrices = forward_kinematics(theta1, theta2, theta3, theta4)
+# define aspect ratios such that the plot's x,y, & z axis are always equal
+range_x = max_x - min_x
+range_y = max_y - min_y
+range_z = max_z - min_z
+max_range = max(range_x, range_y, range_z)
+x_aspect = range_x / max_range
+y_aspect = range_y / max_range
+z_aspect = range_z / max_range
 
-        # Joint positions
-        x_coords = [tm[0, 3] for tm in transformation_matrices]
-        y_coords = [tm[1, 3] for tm in transformation_matrices]
-        z_coords = [tm[2, 3] for tm in transformation_matrices]
 
-        # Add scatter trace for links
-        fig.add_trace(go.Scatter3d(x=x_coords, y=y_coords, z=z_coords,
-                                   mode='lines+markers',
-                                   name=f'Frame {frame}'))
 
-    # Set up animation settings
-    animation_settings = dict(frame=dict(duration=100, redraw=True), fromcurrent=True)
 
-    # Update layout with animation settings
-    fig.update_layout(updatemenus=[dict(type='buttons', showactive=False, buttons=[dict(label='Play',
-                                            method='animate', args=[None, animation_settings])])])
+# Create figure
+fig = go.Figure(go.Scatter3d(x=[], y=[], z=[],
+                             mode="markers",
+                             marker=dict(color="red", size=10),
+                             )
+                )
 
-    # Show plot
-    fig.show()
+# Frames
+frames = [go.Frame(data= [go.Scatter3d(x=x[k],
+                                       y=y[k],
+                                       z=z[k],
+                                       mode='lines+markers',
+                                       )
+                          ],
+                   traces= [0],
+                   name=f'frame{k}',
+                   layout = go.Layout(scene = dict(
+                        xaxis=dict(range=[min_x,  max_x], autorange=False),
+                        yaxis=dict(range=[min_y, max_y], autorange=False),
+                        zaxis=dict(range=[min_z, max_z], autorange=False),
+                        aspectmode='manual',
+                        aspectratio=dict(x=x_aspect, y=y_aspect, z=z_aspect)
+                                      )),
+                  )for k  in  range(len(x))
+          ]
 
-if __name__ == "__main__":
-    plot_3d_robot_arm_animation()
+fig.update(frames=frames)
+
+def frame_args(duration):
+    return {
+            "frame": {"duration": duration},
+            "mode": "immediate",
+            "fromcurrent": True,
+            "transition": {"duration": duration, "easing": "linear"},
+            }
+
+
+sliders = [
+    {"pad": {"b": 10, "t": 60},
+     "len": 0.9,
+     "x": 0.1,
+     "y": 0,
+     
+     "steps": [
+                 {"args": [[f.name], frame_args(0)],
+                  "label": str(k),
+                  "method": "animate",
+                  } for k, f in enumerate(fig.frames)
+              ]
+     }
+        ]
+
+fig.update_layout(
+
+    updatemenus = [{"buttons":[
+                    {
+                        "args": [None, frame_args(50)],
+                        "label": "Play", 
+                        "method": "animate",
+                    },
+                    {
+                        "args": [[None], frame_args(0)],
+                        "label": "Pause", 
+                        "method": "animate",
+                  }],
+                    
+                "direction": "left",
+                "pad": {"r": 10, "t": 70},
+                "type": "buttons",
+                "x": 0.1,
+                "y": 0,
+            }
+         ],
+         sliders=sliders
+    )
+
+# fig.update_layout(scene = dict(xaxis=dict(range=[-100,  100], autorange=False),
+#                                yaxis=dict(range=[-100, 100], autorange=False),
+#                                zaxis=dict(range=[0, 100], autorange=False)
+#                                )
+#                   )
+
+fig.update_layout(sliders=sliders)
+fig.show()
