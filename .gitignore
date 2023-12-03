@@ -1,2 +1,4 @@
 # Virtual environment
 venv/
+# Python bytecode cache
+__pycache__/
