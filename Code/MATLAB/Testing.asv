@@ -48,27 +48,11 @@ y_target = -50;
 z_target = -65;
 
 
+[thetas, x_new, y_new, z_new] = MoveStraight(x_target-10, y_target-10, z_target-10, x_target, y_target, z_target, L2, L4, pen_angle)
 
-[theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle)
+height(thetas)
 
 
-For = FK(L2,L3,L4,L5,theta1,theta2,theta3,theta4,theta5)
-
-Move(theta1, theta2, theta3, theta4);
-
-x1 = -1;
-x2 = 2;
-y1=-1;
-y2 = 2;
-dist = sqrt((x2-x1)^2+(y2-y1)^2);
-steps = ceil(dist);
-x_spacing = (x2-x1)/steps;
-y_spacing = (y2-y1)/steps;
-for i = 1:steps
-    x = x1+(x_spacing*(i-1))
-    y = y2+(y_spacing*(i-1))
-    z = z_paper
-end
 %% FUNCTION DEFINITIONS
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,7 +73,7 @@ end
 %//////////////////////////////////////////////////////////////////////////////////////////////////
 % INVERSE KINEMATICS - units: degrees and mm
 %//////////////////////////////////////////////////////////////////////////////////////////////////
-function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2, L4, pen_angle)
+function thetas = IK(x_target, y_target, z_target, L2, L4, pen_angle)
     
     % Motor Rotation Limits (constrained by 3d part interferences)
     theta1_min = -55;
@@ -132,33 +116,49 @@ function [theta1, theta2, theta3, theta4] = IK(x_target, y_target, z_target, L2,
     if theta1<theta1_min || theta2<theta2_min || theta3<theta3_min || theta4<theta4_min || theta1>theta1_max || theta2>theta2_max || theta3>theta3_max || theta4>theta4_max
         error("at least one calculated motor angle out of bounds");
     end
+
+    thetas = [theta1, theta2, theta3, theta4];
 end
 
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-% Make Everything Upright/Zero - units: degrees and mm
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-function [theta1, theta2, theta3, theta4] = Zero(L2, L4, pen_angle)
+function [thetas, x_new, y_new, z_new] = MoveStraight(x1, y1, z1, x2, y2, z2, L2, L4, pen_angle)
     
+    dist = sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2);
+    steps = ceil(dist)*2
+    x_spacing = (x2-x1)/steps;
+    y_spacing = (y2-y1)/steps;
+    z_spacing = (z2-z1)/steps;
+    
+    thetas = IK(x1, y1, z1, L2, L4, pen_angle);
+    for i = 1:steps
+        thetas_new = IK(x1+x_spacing*i, y1+y_spacing*i, z1+z_spacing*i, L2, L4, pen_angle);
+        thetas = [thetas; thetas_new];
+    end
+    
+    x_new = x2;
+    y_new = y2;
+    z_new = z2;
 end
 
+function SendMotorCommands(thetas, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
+    
+    for i = 1:height(thetas)
+        for i = size(thetas, 2)
 
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-% Move - units: degrees and mm
-%//////////////////////////////////////////////////////////////////////////////////////////////////
-function Move(theta1, theta2, theta3, theta4)
+        end
+    end
+    
+    % write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(theta(i)), 'uint32'));
+end
+
+function nums = ThetaToNums(theta1, theta2, theta3, theta4, port_num, PROTOCOL_VERSION, MX28_GOAL_POSITION)
     
     theta = [theta1 theta2 theta3 theta4];
     length(theta)
     % Motor angle 0-4095
     for i = 1:length(theta)
-        if theta(i) < 0
-            theta(i) = abs(theta(i)) / 360 * 4096;
-        elseif theta(i) > 0
-            theta(i) = 4096 - (abs(theta(i)) / 360 * 4096);
-        end
-        
+        theta(i) = theta(i) / 360 * 4096;
+        write4ByteTxRx(port_num, PROTOCOL_VERSION, i, MX28_GOAL_POSITION, typecast(int32(theta(i)), 'uint32'));
     end
-    
 end
 
 %//////////////////////////////////////////////////////////////////////////////////////////////////

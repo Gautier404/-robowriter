@@ -51,7 +51,7 @@ end
 % Control table address
 MX28_TORQUE_ENABLE        = 64;             % Control table address is different in Dynamixel model
 MX28_GOAL_POSITION        = 116;
-% MX28_PRESENT_POSITION     = 132;
+MX28_PRESENT_POSITION     = 132;
 % MX28_POSITION_P           = 84;
 % MX28_POSITION_D           = 80;
 
