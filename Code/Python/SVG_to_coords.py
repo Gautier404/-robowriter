@@ -268,7 +268,7 @@ def read_path(d):
                 num_commands += 1
             case _:
                 continue
-    print(command_matrix)
+    #print(command_matrix)
     return command_matrix
 
 def parse_svg(svg_file):

@@ -6,7 +6,6 @@ from SVG_to_coords import *
 import plotly.express as px
 
 def coords_to_toolpath(coords):
-    commands = ['M', 'm', 'L', 'l', 'H', 'h', 'V', 'v', 'C', 'c', 'S', 's', 'Q', 'q', 'T', 't', 'A', 'a', 'Z', 'z']
     total_toolpath = []
     for i in range(0, len(coords)):
         if coords[i][0] == 'M' or coords[i][0] == 'm':
@@ -32,14 +31,17 @@ if __name__ == "__main__":
     file_path = current_working_directory + '\\robowriter\\Code\\Python\\svgs\\' + file_name + '.svg'
     coords = parse_svg(file_path)
     toolpath = coords_to_toolpath(coords)
-    print(toolpath)
+    #print(toolpath)
+    # file_object = open("example.txt", "w")
+    # file_object.write(str(toolpath))
     xs = []
     ys = []
     for i in range(0, len(toolpath)):
         for j in range(0, len(toolpath[i])):
             xs.append(float(toolpath[i][j][0]))
             ys.append(float(toolpath[i][j][1]))
-    print(xs)
-    print(ys)
-    fig = px.line(x=xs, y=ys, markers=True)
+    #print(xs)
+    #print(ys)
+    fig = px.line(x=xs, y=ys)
+    fig.update_yaxes(scaleanchor="x",scaleratio=1)
     fig.show()
