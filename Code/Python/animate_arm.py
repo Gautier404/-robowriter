@@ -7,7 +7,7 @@ from forward_kinematics import generate_link_coordinates
 time_steps = np.linspace(0, 180, 20)  # Adjust the range and step size as needed
 
 
-def animate_arm(angular_toolpath: np.array) -> None:
+def animate_arm(angular_toolpath: np.array, cartesian_toolpath: np.array = None) -> None:
     """
     Generates an animation of the robot arm moving through a series of angles.
 
@@ -15,22 +15,21 @@ def animate_arm(angular_toolpath: np.array) -> None:
         angular_toolpath: a two dimensional array of angles that represent the position 
             of each servo for a given timestep.
     """
-    # Initialize empty lists for x, y, and z coordinates
-    x = []
-    y = []
-    z = []
+    # If no cartesian toolpath is specified , create an single point at 0, 0, 0.
+    if cartesian_toolpath is None:
+        cartesian_toolpath = np.array([[0],[0],[0]])
+
+    # Initialize empty arrays for x, y, and z coordinates
+    x = np.zeros((len(angular_toolpath), 7), dtype=float)
+    y = np.zeros((len(angular_toolpath), 7), dtype=float)
+    z = np.zeros((len(angular_toolpath), 7), dtype=float)
 
     # Generate link coordinates for each time step.
-    for step in angular_toolpath:
-        link_coordinates = generate_link_coordinates(
-            step[0],
-            step[1],
-            step[2],
-            step[3],
-        )
-        x.append(link_coordinates["x"])
-        y.append(link_coordinates["y"])
-        z.append(link_coordinates["z"])
+    for i, step in enumerate(angular_toolpath):
+        link_coordinates = generate_link_coordinates(step[0], step[1], step[2], step[3])
+        x[i] = link_coordinates["x"]
+        y[i] = link_coordinates["y"]
+        z[i] = link_coordinates["z"]
 
     # find maximum & minimum x, y & z values of all coordinates for axis ranges.
     padding = 50
@@ -61,6 +60,11 @@ def animate_arm(angular_toolpath: np.array) -> None:
                 )
     )
 
+    # Create coordinate list for the actual toolpath (last joint of the robot)
+    toolpath_x = x[:,6].T
+    toolpath_y = y[:,6].T
+    toolpath_z = z[:,6].T
+
     # Create figure
     fig = go.Figure(
         data=[
@@ -69,7 +73,7 @@ def animate_arm(angular_toolpath: np.array) -> None:
                 y=y[0],
                 z=z[0],
                 mode="markers",
-                marker=dict(color="red", size=10),
+                marker=dict(color="red", size=5),
                 name="joints",
             ),
             go.Scatter3d(
@@ -80,6 +84,22 @@ def animate_arm(angular_toolpath: np.array) -> None:
                 line=dict(color="blue", width=5),
                 name="links",
             ),
+            go.Scatter3d(
+                x = cartesian_toolpath[0],
+                y = cartesian_toolpath[1],
+                z = cartesian_toolpath[2],
+                name = "desired_toolpath",
+                mode="markers",
+                marker=dict(color="green", size=2),
+            ),
+            go.Scatter3d(
+                x = toolpath_x[0:0],
+                y = toolpath_y[0:0],
+                z = toolpath_z[0:0],
+                name = "actual_toolpath",
+                mode="markers",
+                marker=dict(color="black", size=2),
+            )
         ],
         layout= animation_layout
     )
@@ -104,6 +124,22 @@ def animate_arm(angular_toolpath: np.array) -> None:
                     line=dict(color="blue", width=5),
                     name="links",
                 ),
+                go.Scatter3d(
+                    x = cartesian_toolpath[0],
+                    y = cartesian_toolpath[1],
+                    z = cartesian_toolpath[2],
+                    name = "desired_toolpath",
+                    mode="markers",
+                    marker=dict(color="green", size=2),
+                ),
+                go.Scatter3d(
+                    x = toolpath_x[:k],
+                    y = toolpath_y[:k],
+                    z = toolpath_z[:k],
+                    name = "actual_toolpath",
+                    mode="markers",
+                    marker=dict(color="black", size=2),
+                )
             ],
             # traces= [0, 1], # corresponds to which traces should be displayed...
             name=f"frame{k}",
@@ -169,12 +205,19 @@ def animate_arm(angular_toolpath: np.array) -> None:
 
 
 if __name__ == "__main__":
-    toolpath = np.array([
+    anglular_toolpath = np.array([
         np.linspace(0, 0, 40),
         np.linspace(45, 45, 40),
         np.linspace(45, 45, 40),
         np.linspace(0, 45, 40)
     ])
-    toolpath = toolpath.T
+    desired_toolpath = np.array([
+        np.linspace(0, 100, 40),
+        np.linspace(0, 0, 40),
+        np.linspace(0, 0, 40)
+    ])
 
-    animate_arm(toolpath)
+
+    anglular_toolpath = anglular_toolpath.T
+
+    animate_arm(anglular_toolpath, desired_toolpath)
