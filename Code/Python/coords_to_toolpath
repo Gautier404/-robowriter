@@ -28,7 +28,7 @@ def coords_to_toolpath(coords):
 if __name__ == "__main__":
     current_working_directory = os.getcwd()
     #file_name = input("What file do you want to use?\n")
-    file_name = "rectangle"
+    file_name = "spiral_1701380745860"
     file_path = current_working_directory + '\\robowriter\\Code\\Python\\svgs\\' + file_name + '.svg'
     coords = parse_svg(file_path)
     toolpath = coords_to_toolpath(coords)

@@ -13,7 +13,7 @@ def find_next_letter(text, position, cache):
 def find_next_comma(text, position):
     for i in range(position + 1, len(text)):
         char = text[i]
-        if char == ',' or char == '-':
+        if char == ',' or char == ' ':
             return i
     return -1
 
