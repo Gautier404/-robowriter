@@ -1,0 +1,36 @@
+import xml.etree.ElementTree as ET
+
+# Load SVG file
+file_path = 'c:/Users/jonah/GitHub/Robot_Arm/robowriter/Code/Python/svgs/rectangle.svg'
+tree = ET.parse(file_path)
+root = tree.getroot()
+
+# Define SVG namespace
+svg_namespace = {'svg': 'http://www.w3.org/2000/svg'}
+
+# Find all path elements
+paths = root.findall('.//svg:path', namespaces=svg_namespace)
+
+# Extract points from paths
+def extract_points(d):
+    commands = ['M', 'm', 'L', 'l', 'H', 'h', 'V', 'v', 'C', 'c', 'S', 's', 'Q', 'q', 'T', 't', 'A', 'a']
+    points = []
+    segments = d.split()
+    i = 0
+    while i < len(segments):
+        segment = segments[i]
+        if segment in commands:
+            i += 1
+            continue
+        x = float(segment)
+        y = float(segments[i + 1])
+        points.append((x, y))
+        i += 2
+    return points
+
+# Extract points from each path
+all_points = []
+for path in paths:
+    d_attrib = path.attrib.get('d', '')
+    points = extract_points(d_attrib)
+    all_points.extend(points)
