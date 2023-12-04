@@ -14,3 +14,8 @@ THETA_1_MIN, THETA_1_MAX = -55, 55      # degrees
 THETA_2_MIN, THETA_2_MAX = -115, 0      # degrees
 THETA_3_MIN, THETA_3_MAX = -108, 0      # degrees
 THETA_4_MIN, THETA_4_MAX = -103, 103    # degrees
+
+PEN_LIFT_MM = 10        # mm  [PEN LIFT HEIGHT]
+MAX_STEP_MM = 1       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
+
+ROBOT_HOME_POSITION = [200, 0, 50] # [x, y, z] in mm in base coordinate frame.

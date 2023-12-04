@@ -1,5 +1,5 @@
 """
-This file contains a function and tests for processing a simple 2D drawing into a interpolated and 
+This file contains a function and tests for processing a simple 2D drawing into a 
 scaled cartesian toolpath for the end deffector of our robot arm
 """
 import numpy as np
