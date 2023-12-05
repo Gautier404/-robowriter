@@ -4,7 +4,7 @@ scaled cartesian toolpath for the end deffector of our robot arm
 """
 import numpy as np
 
-def fit_path(flat_toolpath: np.array, bounds: np.array) -> np.array:
+def fit_path(flat_toolpath, bounds: np.array) -> np.array:
     """fit the 2d toolpath to the bounds of the drawing area using simple bounds.
     
     parameters:
@@ -58,7 +58,7 @@ def fit_path(flat_toolpath: np.array, bounds: np.array) -> np.array:
 
 if __name__ == "__main__":
     bounds = np.array([[0, 0], [10, 10]], dtype=float)
-    flat_toolpath_in = np.array([[[0, 0], [0, 10]], [[0, -20], [-20, -20]], [[20, 20], [20, 0]]], dtype=float)
+    flat_toolpath_in = [[[0, 0], [0, 10]], [[0, -20], [-20, -20]], [[20, 20], [20, 0]]]
     consolidated_toolpath = np.concatenate(flat_toolpath_in) 
     new_path = fit_path(flat_toolpath_in, bounds)
     print(new_path)
