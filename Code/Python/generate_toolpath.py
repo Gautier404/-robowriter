@@ -91,6 +91,7 @@ def generate_angular_toolpath(cartesian_toolpath: np.array):
         angular_toolpath[i] = generate_link_angles(position)
     return angular_toolpath
 
+
 if __name__ == "__main__":
     toolpath = np.array([[[0, 0], [100, 100]], [[100, 200], [200, 200]]], dtype=float)
     consolidated_toolpath = np.concatenate(toolpath) 
