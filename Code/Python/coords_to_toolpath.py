@@ -28,16 +28,16 @@ if __name__ == "__main__":
     coords = parse_svg(file_path)
     toolpath = coords_to_toolpath(coords)
     print(toolpath)
-    # file_object = open("example.txt", "w")
-    # file_object.write(str(toolpath))
-    # xs = []
-    # ys = []
-    # for i in range(0, len(toolpath)):
-    #     for j in range(0, len(toolpath[i])):
-    #         xs.append(float(toolpath[i][j][0]))
-    #         ys.append(float(toolpath[i][j][1]))
-    # #print(xs)
-    # #print(ys)
-    # fig = px.line(x=xs, y=ys)
-    # fig.update_yaxes(scaleanchor="x",scaleratio=1)
-    # fig.show()
+    file_object = open("example.txt", "w")
+    file_object.write(str(toolpath))
+    xs = []
+    ys = []
+    for i in range(0, len(toolpath)):
+        for j in range(0, len(toolpath[i])):
+            xs.append(float(toolpath[i][j][0]))
+            ys.append(float(toolpath[i][j][1]))
+    #print(xs)
+    #print(ys)
+    fig = px.line(x=xs, y=ys)
+    fig.update_yaxes(scaleanchor="x",scaleratio=1)
+    fig.show()

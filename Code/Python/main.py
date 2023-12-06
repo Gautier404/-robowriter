@@ -86,7 +86,7 @@ print("Press any key to continue to path execution or ESC to cancel")
 if ord(getch()) == ESC_CH:
     exit()
 print("Initializing motors...")
-COM_PORT = 'COM5'
+COM_PORT = 'COM3'
 controller = MotorController(COM_PORT, MOTOR_IDS)
 controller.connect_dynamixel()
 controller.write_motor_positions(HOME_POSITION_BITS)
@@ -99,5 +99,7 @@ for i, commands in enumerate(bit_commands):
     controller.write_motor_positions(commands)
 
 # Disconnect motors
-print("Disconnecting motors...")
-controller.disconnect()
+print("Do you want to disconnect the motors? (y)")
+if input() == "y":
+    print("Disconnecting motors...")
+    controller.disconnect()

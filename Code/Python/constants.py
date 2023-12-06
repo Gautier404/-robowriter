@@ -5,8 +5,8 @@ from motor_controller import bits_to_degrees, degrees_to_bits
 L0 = 118.8          # mm  [BASE TO AXIS 2 LENGTH] (need to verify)
 L2 = 140            # mm
 L3 = 140            # mm
-L4 = 40.389         # mm
-L5 = 60.5          # mm  [PEN EXTENTION LENGTH]
+L4 = 39         # mm
+L5 = 59          # mm  [PEN EXTENTION LENGTH]
 
 THETA_5 =  50.25      # degrees
 
@@ -29,7 +29,7 @@ MAX_STEP_MM = 1       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
 
 
 
-ANGLE_OFFSET = np.array([135.0, 179.0, 161.0, 100.25])  # Converts from physical angles to theoretical ones
+ANGLE_OFFSET = np.array([139.57, 179.03, 160.66, 96.59])  # Converts from physical angles to theoretical ones
 ANGLE_SCALING = np.array([1, -1, -1, -1])               # Converts from theoretical angles to physical ones
                                                         # theoretical_angle = ANGLE_SCALING * (physical_angle - OFFSET_ANGLES_GUESS)
 
@@ -41,4 +41,4 @@ DRAWING_BOUNDS = np.array([[280, 125], [120, -100]]) # The bounds of the drawing
 
 MOTOR_IDS = [1, 2, 3, 4]                                # The motor ids for the motors we are using.
 ESC_CH = 0x1b                                           # The escape character used to exit the program.
-TABLE_HEIGHT_MM = -5                                   #  The height of the table in mm in the base coordinate frame.
+TABLE_HEIGHT_MM = 5                                   #  The height of the table in mm in the base coordinate frame.
