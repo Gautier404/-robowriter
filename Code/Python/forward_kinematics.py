@@ -5,7 +5,7 @@ You can find a description of the robot's geometry in the DH_and_frames.jpg file
 """
 import numpy as np
 import pandas as pd
-from kinematic_constants import *
+from constants import *
 
 
 def transformation_matrix(alpha, a, d, theta):

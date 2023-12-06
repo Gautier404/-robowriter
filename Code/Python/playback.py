@@ -7,11 +7,11 @@ from motor_controller import MotorController, bits_to_degrees, degrees_to_bits, 
 from forward_kinematics import forward_kinematics
 import time
 import numpy as np
-from kinematic_constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
+from constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
 
 
 COM_PORT = 'COM5'
-RUNTIME_S = 10 # seconds
+RUNTIME_S = 5 # seconds
 STEP_TIME_S = 0.05 # seconds
 
 
@@ -27,7 +27,7 @@ getch()
 
 # record the toolpath
 recording_bits = np.array([0, 0, 0, 0], dtype=int)
-recording_step_time = np.array([0], dtype=int)
+recording_step_time = [0]
 start_time = time.time()
 last_recording_time = start_time
 while time.time() - start_time < RUNTIME_S:
@@ -35,7 +35,7 @@ while time.time() - start_time < RUNTIME_S:
     positions_bits = controller.get_motor_positions()
     recording_bits = np.vstack((recording_bits, positions_bits))
     recording_time = time.time()
-    recording_step_time = np.vstack((recording_step_time, recording_time - last_recording_time))
+    recording_step_time.append(recording_time - last_recording_time) 
     last_recording_time = recording_time
 
 

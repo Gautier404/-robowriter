@@ -1,7 +1,7 @@
 """This file uses the forward kinematics model to display our virtual robot arm in a static position"""
 
 from forward_kinematics import generate_link_coordinates
-from kinematic_constants import *
+from constants import *
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd

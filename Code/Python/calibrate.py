@@ -7,7 +7,7 @@ from motor_controller import MotorController, bits_to_degrees, degrees_to_bits, 
 from forward_kinematics import forward_kinematics
 import time
 import numpy as np
-from kinematic_constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
+from constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
 
 
 COM_PORT = 'COM5'

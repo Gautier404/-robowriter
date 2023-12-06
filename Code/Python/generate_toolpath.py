@@ -4,7 +4,7 @@ This file contains a function and tests for processing a scaled 2D drawing into 
 """
 
 import numpy as np
-from kinematic_constants import PEN_LIFT_MM, ROBOT_HOME_POSITION, MAX_STEP_MM
+from constants import PEN_LIFT_MM, MAX_STEP_MM, HOME_POSITION_CARTESIAN, TABLE_HEIGHT_MM
 from inverse_kinematics import generate_link_angles
 
 def interpolate_toolpath(toolpath: np.array)-> np.array:
@@ -20,7 +20,7 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
         a 2D numpy array of the smoothed x, y, z coordinates of the pen tip in mm 
         in the base coordinate frame. ex: [[x1, y1, z1], [x2, y2, z2], [x3, y3, z3]]
     """
-    interpolated_toolpath = np.array(ROBOT_HOME_POSITION, dtype=float) # start at home position
+    interpolated_toolpath = np.array(HOME_POSITION_CARTESIAN, dtype=float) # start at home position
     for i in range(1, toolpath.shape[0]):
         # calculate the distance between the current point and the previous point
         distance = np.sqrt(np.sum((toolpath[i] - toolpath[i-1])**2))
@@ -36,7 +36,7 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
             interpolated_toolpath = np.vstack((interpolated_toolpath, toolpath[i-1] + step_size * j))
 
     # end at home position
-    interpolated_toolpath = np.vstack((interpolated_toolpath, ROBOT_HOME_POSITION))
+    interpolated_toolpath = np.vstack((interpolated_toolpath, HOME_POSITION_CARTESIAN))
 
     return interpolated_toolpath
 
@@ -54,12 +54,12 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
     """
 
     # initialize empty array for 3d toolpath
-    toolpath_3d = np.array(ROBOT_HOME_POSITION, dtype=float) # start at home position
+    toolpath_3d = np.array(HOME_POSITION_CARTESIAN, dtype=float) # start at home position
 
     # add in z coordinates and the movement between drawing positions
     for path in toolpath:
         # add z coordinates to each path
-        zeros_column = np.zeros((path.shape[0], 1))
+        zeros_column = np.zeros((path.shape[0], 1)) + TABLE_HEIGHT_MM
         path_3d = np.hstack((path, zeros_column))
 
 
@@ -72,7 +72,7 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
         toolpath_3d = np.vstack((toolpath_3d, path_3d))
     
     # end at home position
-    toolpath_3d = np.vstack((toolpath_3d, ROBOT_HOME_POSITION))
+    toolpath_3d = np.vstack((toolpath_3d, HOME_POSITION_CARTESIAN))
 
     # interpolate between points
     interpolated_toolpath = interpolate_toolpath(toolpath_3d)

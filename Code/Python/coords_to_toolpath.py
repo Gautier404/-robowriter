@@ -8,11 +8,13 @@ import plotly.express as px
 def coords_to_toolpath(coords):
     total_toolpath = []
     tp = np.array([])
+    toolpath_set = False
     for i, command in enumerate(coords):
         if coords[i][0].lower() == 'm':
-            if tp != np.array([]):
+            if toolpath_set:
                 total_toolpath.append(tp)
             tp = np.array([float(command[1]), float(command[2])], dtype=float)
+            toolpath_set = True
         else:
             tp = np.vstack((tp, np.array([float(command[1]), float(command[2])])))
     total_toolpath.append(tp)
