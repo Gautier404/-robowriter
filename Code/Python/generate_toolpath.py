@@ -10,7 +10,8 @@ from inverse_kinematics import generate_link_angles
 def interpolate_toolpath(toolpath: np.array)-> np.array:
     """
     interpolate between points in a toolpath to create a smoother toolpath that has
-    a maximum step distance of MAX_STEP_MM between points.
+    a maximum step distance of MAX_STEP_MM between points. Also clip points that are too close
+    together.
     
     parameters:
         toolpath: a 2D numpy array of the x, y, z coordinates of the pen tip in mm 
@@ -25,15 +26,27 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
         # calculate the distance between the current point and the previous point
         distance = np.sqrt(np.sum((toolpath[i] - toolpath[i-1])**2))
 
-        # calculate the number of points to interpolate between the current point and the previous point
-        num_points = int(np.ceil(distance / MAX_STEP_MM))
+        # if the distance between the current point and the previous point is greater than the max step interpolate between them
+        if distance > MAX_STEP_MM:
+            # calculate the number of points to interpolate between the current point and the previous point
+            num_points = int(np.ceil(distance / MAX_STEP_MM))
 
-        # calculate the step size for each dimension
-        step_size = (toolpath[i] - toolpath[i-1]) / num_points
+            # calculate the step size for each dimension
+            step_size = (toolpath[i] - toolpath[i-1]) / num_points
 
-        # interpolate between the current point and the previous point
-        for j in range(num_points):
-            interpolated_toolpath = np.vstack((interpolated_toolpath, toolpath[i-1] + step_size * j))
+            # interpolate between the current point and the previous point
+            for j in range(num_points):
+                interpolated_toolpath = np.vstack((interpolated_toolpath, toolpath[i-1] + step_size * j))
+        # if the distance between the current point and the previous point is less than the max step clip the point
+        elif distance < MAX_STEP_MM:
+            for j in range(i, toolpath.shape[0]):
+                # calculate the distance between the current point and the previous point
+                distance = np.sqrt(np.sum((toolpath[j] - toolpath[i-1])**2))
+                if distance > MAX_STEP_MM:
+                    i = j
+                    break
+            
+
 
     # end at home position
     interpolated_toolpath = np.vstack((interpolated_toolpath, HOME_POSITION_CARTESIAN))
@@ -74,7 +87,7 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
     # end at home position
     toolpath_3d = np.vstack((toolpath_3d, HOME_POSITION_CARTESIAN))
 
-    # interpolate between points
+    # interpolate between points/cut out points that are too close together
     interpolated_toolpath = interpolate_toolpath(toolpath_3d)
     return interpolated_toolpath
 
