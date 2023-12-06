@@ -10,7 +10,7 @@ import numpy as np
 from constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
 
 
-COM_PORT = 'COM5'
+COM_PORT = 'COM3'
 RUNTIME_S = 100 # seconds
 STEP_TIME_S = 0.1 # seconds
 
@@ -28,7 +28,7 @@ for i in range(0, int(RUNTIME_S/STEP_TIME_S)):
     positions_degrees_physical = bits_to_degrees(positions_bits)
     positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
     end_deffector_coords = forward_kinematics(positions_degrees_theoretical[0], positions_degrees_theoretical[1], positions_degrees_theoretical[2], positions_degrees_theoretical[3])[5][0:3, 3]
-    print("Current motor positions: ", positions_degrees_theoretical, "end deffector coords: ", end_deffector_coords)
+    print("Current motor positions: ", positions_degrees_physical, "end deffector coords: ", end_deffector_coords)
     time.sleep(STEP_TIME_S)
 
 controller.disconnect()

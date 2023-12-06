@@ -11,8 +11,10 @@ def find_next_letter(text, position, cache):
     return -1  # If no next letter found
 
 def find_next_comma(text, position):
-    for i in range(position + 1, len(text)):
+    for i in range(position + 2, len(text)):
         char = text[i]
+        if char == '-':
+            return i-1
         if char == ',' or char == ' ':
             return i
     return -1
@@ -90,6 +92,9 @@ def read_path(d):
                 h_array = []
                 h_array.append("h")
                 next_letter = find_next_letter(d, i, commands)
+                x = float(d[i+1:next_letter])
+                x_coord = x + float(command_matrix[num_commands - 1][1])
+                v_array.append(str(x_coord))
                 x_coord = d[i+1:next_letter]
                 h_array.append(x_coord)
                 y_coord = command_matrix[num_commands - 1][2]
@@ -112,8 +117,9 @@ def read_path(d):
                 x_coord = command_matrix[num_commands - 1][1]
                 v_array.append(x_coord)
                 next_letter = find_next_letter(d, i, commands)
-                y_coord = d[i+1:next_letter]
-                v_array.append(y_coord)
+                y = float(d[i+1:next_letter])
+                y_coord = y + float(command_matrix[num_commands - 1][2])
+                v_array.append(str(y_coord))
                 command_matrix.append(v_array)
                 num_commands += 1
             case 'C':
