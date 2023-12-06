@@ -288,12 +288,48 @@ def parse_svg(svg_file):
         command_matrix = read_path(d_attrib)
     return command_matrix
     
+def read_path2(path: str):
+    commands = ()
+    command_matrix = []
+    current_line = []
+    current_num = ''
 
+    for char in path:
+        match char:
+            case 'M'| 'm' | 'L' | 'l' | 'H' | 'h' | 'V' | 'v' | 'C' | 'c' | 'S' | 's' | 'Q' | 'q' | 'T' | 't' | 'A' | 'a' | 'Z' | 'z':
+                if current_num:
+                    current_line.append(current_num)
+                    current_num = ''
+
+                if current_line:
+                    command_matrix.append(current_line)
+                current_line = [char]
+            case ' ' | ',':
+                if current_num:
+                    current_line.append(current_num)
+                    current_num = ''
+            case '-':
+                if current_num:
+                    current_line.append(current_num)
+                current_num = '-'
+            case _:
+                current_num += char
+
+    if current_num:
+        current_line.append(current_num)
+
+    if current_line:
+        command_matrix.append(current_line)
+
+    return command_matrix
 
 if __name__ == "__main__":
     current_working_directory = os.getcwd()
     #file_name = input("What file do you want to use?\n")
-    file_name = "rectangle"
-    file_path = current_working_directory + '\\robowriter\\Code\\Python\\svgs\\' + file_name + '.svg'
-    print(parse_svg(file_path))
+    # file_name = "rectangle"
+    # file_path = current_working_directory + '\\robowriter\\Code\\Python\\svgs\\' + file_name + '.svg'
+    # print(parse_svg(file_path))
     #convert_to_toolpath(paths)
+
+    test_string = "M501.333,96H10.667C4.779,96,0,100.779,0,106.667v298.667C0,411.221,4.779,416,10.667,416h490.667c5.888,0,10.667,4.779,-10.667,-10.667V106.667C512,100.779,507.221,96,501.333,96z M490.667,394.667H21.333V117.333h469.333V394.667z"
+    print(read_path2(test_string))
