@@ -22,9 +22,11 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
         in the base coordinate frame. ex: [[x1, y1, z1], [x2, y2, z2], [x3, y3, z3]]
     """
     interpolated_toolpath = np.array(HOME_POSITION_CARTESIAN, dtype=float) # start at home position
+    last_point = interpolated_toolpath
     for i in range(1, toolpath.shape[0]):
         # calculate the distance between the current point and the previous point
-        distance = np.sqrt(np.sum((toolpath[i] - toolpath[i-1])**2))
+        distance = np.sqrt(np.sum((toolpath[i] - last_point)**2))
+
 
         # if the distance between the current point and the previous point is greater than the max step interpolate between them
         if distance > MAX_STEP_MM:
@@ -32,19 +34,22 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
             num_points = int(np.ceil(distance / MAX_STEP_MM))
 
             # calculate the step size for each dimension
-            step_size = (toolpath[i] - toolpath[i-1]) / num_points
+            step_size = (toolpath[i] - last_point) / num_points
 
             # interpolate between the current point and the previous point
             for j in range(num_points):
-                interpolated_toolpath = np.vstack((interpolated_toolpath, toolpath[i-1] + step_size * j))
+                interpolated_toolpath = np.vstack((interpolated_toolpath, last_point + step_size * j))
         # if the distance between the current point and the previous point is less than the max step clip the point
         elif distance < MAX_STEP_MM:
+            print(distance)
             for j in range(i, toolpath.shape[0]):
                 # calculate the distance between the current point and the previous point
-                distance = np.sqrt(np.sum((toolpath[j] - toolpath[i-1])**2))
+                distance = np.sqrt(np.sum((toolpath[j] - last_point)**2))
                 if distance > MAX_STEP_MM:
                     i = j
                     break
+        
+        last_point = interpolated_toolpath[-1,:]
             
 
 
@@ -77,8 +82,8 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
 
 
         # add points before & after the path where the pen is lifted off the paper
-        point_before = path_3d[0] + [0, 0, PEN_LIFT_MM]
-        point_after = path_3d[-1] + [0, 0, PEN_LIFT_MM]
+        point_before = path_3d[0,:] + [0, 0, PEN_LIFT_MM]
+        point_after = path_3d[-1,:] + [0, 0, PEN_LIFT_MM]
         path_3d = np.vstack((point_before, path_3d, point_after))
         
         # append the 3d path to the 3d toolpath
