@@ -39,7 +39,9 @@ HOME_POSITION_CARTESIAN = [115, 0, 54] # [x, y, z] in mm in base coordinate fram
 HOME_POSITION_DEGREES_MODEL = [0.0, 1.9862793011776887, 143.08261592788622, -15.318895229063912] # A stable home position in degrees as calculated by our model.
 HOME_POSITION_BITS = ((HOME_POSITION_DEGREES_MODEL*ANGLE_SCALING + ANGLE_OFFSET)*DEGREES_TO_BITS).astype(int) # A stable home position in bits.
 
-DRAWING_BOUNDS = np.array([[300, 190], [130.29, -190]]) # The bounds of the drawing area in mm in the base coordinate frame.
+# [300, 190], [130.29, -190] <-  these are pretty good max bounds
+# [[300, 130], [130.29, -130]] <- these are the bounds we used for Drew's notebook paper
+DRAWING_BOUNDS = np.array([[300, 130], [130.29, -130]]) # The bounds of the drawing area in mm in the base coordinate frame.
 
 MOTOR_IDS = [1, 2, 3, 4]                                # The motor ids for the motors we are using.
 ESC_CH = 0x1b                                           # The escape character used to exit the program.
