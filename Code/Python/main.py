@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from constants import *
 from motor_controller import MotorController, bits_to_degrees, degrees_to_bits, getch
 import time
+from forward_kinematics import *
 
 # Get svg to use.
 current_working_directory = os.getcwd()
@@ -21,11 +22,11 @@ else:
 # Convert svg to 2d toolpath.
 print("Converting svg to 2d toolpath...")
 coords = parse_svg(file_path)
-toolpath = coords_to_toolpath(coords)
-for i in range(0, len(toolpath)):
-    for j in range(0, len(toolpath[i])):
-        toolpath[i][j][0] = float(toolpath[i][j][0])
-        toolpath[i][j][1] = float(toolpath[i][j][1])
+toolpath = read_path(coords)
+# for i in range(0, len(toolpath)):
+#     for j in range(0, len(toolpath[i])):
+#         toolpath[i][j][0] = float(toolpath[i][j][0])
+#         toolpath[i][j][1] = float(toolpath[i][j][1])
 
 # Scale toolpath to fit in bounds.
 print("Scaling toolpath...")
@@ -93,10 +94,27 @@ controller.write_motor_positions(HOME_POSITION_BITS)
 controller.enable_all_torque()
 time.sleep(1)
 
+
+
+
 # Run profile
 print("Running profile...")
+SPEED = 3
+positions_bits = controller.get_motor_positions()
+positions_degrees_physical = bits_to_degrees(positions_bits)
+positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
+end_deffector_coords = forward_kinematics(positions_degrees_theoretical[0], positions_degrees_theoretical[1], positions_degrees_theoretical[2], positions_degrees_theoretical[3])[5][0:3, 3]
+output_toolpath = end_deffector_coords
+output_angles = positions_degrees_theoretical
 for i, commands in enumerate(bit_commands):
-    controller.write_motor_positions(commands)
+    if i % SPEED == 0:
+        controller.write_motor_positions(commands)
+        positions_bits = controller.get_motor_positions()
+        positions_degrees_physical = bits_to_degrees(positions_bits)
+        positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
+        end_deffector_coord = forward_kinematics(positions_degrees_theoretical[0], positions_degrees_theoretical[1], positions_degrees_theoretical[2], positions_degrees_theoretical[3])[5][0:3, 3]
+        output_toolpath = np.vstack((output_toolpath, end_deffector_coord))
+        output_angles = np.vstack((output_angles, positions_degrees_theoretical))
 
 # Disconnect motors
 print("Do you want to disconnect the motors? (y)")
@@ -105,9 +123,51 @@ if input() == "y":
     controller.disconnect()
 
 
+<<<<<<< HEAD
 # Save toolpath to file
 print("Do you want to save the toolpath to a file? (y)")
 if input() == "y":
     print("Saving toolpath...")
     np.savetxt("toolpath.txt", bit_commands, fmt='%d')
     print("Toolpath saved to toolpath.txt")
+=======
+#Enter filename to save
+answer = input("Do you want to save the toolpath to a file? (y)")
+if answer == "y":
+    filename = input("Enter file name")
+    print("Saving toolpath... ")
+    np.savetxt(filename+"_input_toolpath.txt", cartesian_toolpath, fmt = '%d')
+    np.savetxt(file_name+"_output_toolpath.txt", output_toolpath, fmt = '%d')
+    print("files saved")
+
+
+post_review_3d = go.Figure()
+
+# Plot original toolpath
+post_review_3d.add_trace(go.Scatter3d(x=cartesian_toolpath[:,0], y=cartesian_toolpath[:,1], z=cartesian_toolpath[:,2], mode='lines', name='Input Toolpath'))
+
+# Plot scaled toolpath
+post_review_3d.add_trace(go.Scatter3d(x=output_toolpath[:,0], y=output_toolpath[:,1], z = output_toolpath[:,2] ,mode='lines', name='Recorded Toolpath'))
+
+# Set layout
+post_review_3d.update_layout(title='Post Review',
+                    showlegend=True)
+
+post_review_3d.show()
+
+# Add figure of angle commands
+post_review_angles = go.Figure()
+
+x_output = np.linspace(0, output_angles.shape[0], output_angles.shape[0])*SPEED
+x_input = np.linspace(0, angular_toolpath_model.shape[0], angular_toolpath_model.shape[0])
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,0], name="Theta_1_out"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,1], name="Theta_2_out"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,2], name="Theta_3_out"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,3], name="Theta_4_out"))
+post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,0], name="Theta_1_in"))
+post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,1], name="Theta_2_in"))
+post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,2], name="Theta_3_in"))
+post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,3], name="Theta_4_in"))
+
+post_review_angles.show()
+>>>>>>> 47c44772fdddfeeab4b59c9b3d40b59153be3da2

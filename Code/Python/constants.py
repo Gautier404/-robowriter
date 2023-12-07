@@ -25,7 +25,7 @@ THETA_4_MIN = -69
 THETA_4_MAX =  99
 
 PEN_LIFT_MM = 10        # mm  [PEN LIFT HEIGHT]
-MAX_STEP_MM = 1       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
+MAX_STEP_MM = 1.0       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
 
 
 
@@ -37,8 +37,10 @@ HOME_POSITION_CARTESIAN = [160, 0, 60] # [x, y, z] in mm in base coordinate fram
 HOME_POSITION_DEGREES_MODEL = [0.0, 16.042820445398846, 123.81428707308204, -10.107107518480888] # A stable home position in degrees as calculated by our model.
 HOME_POSITION_BITS = degrees_to_bits(HOME_POSITION_DEGREES_MODEL*ANGLE_SCALING + ANGLE_OFFSET) # A stable home position in bits.
 
-DRAWING_BOUNDS = np.array([[280, 125], [120, -100]]) # The bounds of the drawing area in mm in the base coordinate frame.
+DRAWING_BOUNDS = np.array([[217.67, 70.80], [113.29, -93.78]]) # The bounds of the drawing area in mm in the base coordinate frame.
 
 MOTOR_IDS = [1, 2, 3, 4]                                # The motor ids for the motors we are using.
 ESC_CH = 0x1b                                           # The escape character used to exit the program.
-TABLE_HEIGHT_MM = 5                                   #  The height of the table in mm in the base coordinate frame.
+TABLE_HEIGHT_MM = 10                                   #  The height of the table in mm in the base coordinate frame.
+
+POINTS_IN_CURVE = 100
