@@ -10,7 +10,7 @@ import numpy as np
 from constants import ANGLE_OFFSET, ANGLE_SCALING, MOTOR_IDS
 
 
-COM_PORT = 'COM3'
+COM_PORT = 'COM5'
 RUNTIME_S = 100 # seconds
 STEP_TIME_S = 0.1 # seconds
 

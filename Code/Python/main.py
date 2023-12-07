@@ -86,6 +86,9 @@ bit_commands = degrees_to_bits(angular_toolpath_physical)
 
 
 # Initialize dynamixel motors
+
+SPEED = 1
+
 print("Press any key to continue to path execution or ESC to cancel")
 if ord(getch()) == ESC_CH:
     exit()
@@ -93,22 +96,48 @@ print("Initializing motors...")
 COM_PORT = 'COM5'
 controller = MotorController(COM_PORT, MOTOR_IDS, GAINS)
 controller.connect_dynamixel()
-controller.write_motor_positions(HOME_POSITION_BITS)
 controller.enable_all_torque()
 time.sleep(1)
 
+# command motor from current position to home position
+# get current position
+# print("Moving to home position...")
+# positions_bits = controller.get_motor_positions()
+# positions_degrees_physical = bits_to_degrees(positions_bits)
+# positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
+# end_deffector_coords = forward_kinematics(positions_degrees_theoretical[0], positions_degrees_theoretical[1], positions_degrees_theoretical[2], positions_degrees_theoretical[3])[5][0:3, 3]
+
+# # create angular toolpath with this position and home position
+# homing_toolpath = np.vstack((end_deffector_coords, end_deffector_coords, np.array(HOME_POSITION_CARTESIAN)))
+# homing_toolpath = interpolate_toolpath(homing_toolpath)
+# homing_angular_toolpath = generate_angular_toolpath(homing_toolpath)
+# homing_bits_toolpath = degrees_to_bits(homing_angular_toolpath*ANGLE_SCALING + ANGLE_OFFSET)
+
+# # run homing toolpath
+# for i, commands in enumerate(homing_bits_toolpath):
+#     if i % SPEED == 0:
+#         print(commands)
+#         controller.write_motor_positions(commands)
+#         time.sleep(0.1)
 
 
 
 # Run profile
 print("Running profile...")
-SPEED = 1
+
+
+
+
+# information to save
 positions_bits = controller.get_motor_positions()
 positions_degrees_physical = bits_to_degrees(positions_bits)
 positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
 end_deffector_coords = forward_kinematics(positions_degrees_theoretical[0], positions_degrees_theoretical[1], positions_degrees_theoretical[2], positions_degrees_theoretical[3])[5][0:3, 3]
 output_toolpath = end_deffector_coords
 output_angles = positions_degrees_theoretical
+
+
+
 for i, commands in enumerate(bit_commands):
     if i % SPEED == 0:
         controller.write_motor_positions(commands)
@@ -119,11 +148,10 @@ for i, commands in enumerate(bit_commands):
         output_toolpath = np.vstack((output_toolpath, end_deffector_coord))
         output_angles = np.vstack((output_angles, positions_degrees_theoretical))
 
+
 # Disconnect motors
-print("Do you want to disconnect the motors? (y)")
-if input() == "y":
-    print("Disconnecting motors...")
-    controller.disconnect()
+print("Disconnecting motors...")
+controller.disconnect()
 
 
 post_review_3d = go.Figure()

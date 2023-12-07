@@ -5,7 +5,7 @@ L0 = 118.8          # mm  [BASE TO AXIS 2 LENGTH] (need to verify)
 L2 = 140            # mm
 L3 = 140            # mm
 L4 = 39         # mm
-L5 = 65          # mm  [PEN EXTENTION LENGTH]
+L5 = 55          # mm  [PEN EXTENTION LENGTH]
 
 THETA_5 =  50.25      # degrees
 
@@ -23,8 +23,8 @@ THETA_3_MAX =  150
 THETA_4_MIN = -69    
 THETA_4_MAX =  99
 
-PEN_LIFT_MM = 20        # mm  [PEN LIFT HEIGHT]
-MAX_STEP_MM = 1.0       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
+PEN_LIFT_MM = 5        # mm  [PEN LIFT HEIGHT]
+MAX_STEP_MM = 1       # mm  [MAXIMUM DISTANCE BETWEEN POINTS IN THE TOOLPATH]
 
 
 
@@ -35,37 +35,37 @@ ANGLE_SCALING = np.array([1, -1, -1, -1])               # Converts from theoreti
 BITS_TO_DEGREES = 360 / 4096
 DEGREES_TO_BITS = 4096 / 360
 
-HOME_POSITION_CARTESIAN = [160, 0, 60] # [x, y, z] in mm in base coordinate frame.
-HOME_POSITION_DEGREES_MODEL = [0.0, 16.042820445398846, 123.81428707308204, -10.107107518480888] # A stable home position in degrees as calculated by our model.
+HOME_POSITION_CARTESIAN = [115, 0, 54] # [x, y, z] in mm in base coordinate frame.
+HOME_POSITION_DEGREES_MODEL = [0.0, 1.9862793011776887, 143.08261592788622, -15.318895229063912] # A stable home position in degrees as calculated by our model.
 HOME_POSITION_BITS = ((HOME_POSITION_DEGREES_MODEL*ANGLE_SCALING + ANGLE_OFFSET)*DEGREES_TO_BITS).astype(int) # A stable home position in bits.
 
-DRAWING_BOUNDS = np.array([[217.67, 70.80], [130.29, -93.78]]) # The bounds of the drawing area in mm in the base coordinate frame.
+DRAWING_BOUNDS = np.array([[300, 190], [130.29, -190]]) # The bounds of the drawing area in mm in the base coordinate frame.
 
 MOTOR_IDS = [1, 2, 3, 4]                                # The motor ids for the motors we are using.
 ESC_CH = 0x1b                                           # The escape character used to exit the program.
-TABLE_HEIGHT_MM = 10                                   #  The height of the table in mm in the base coordinate frame.
+TABLE_HEIGHT_MM = -2                                  #  The height of the table in mm in the base coordinate frame.
 
 POINTS_IN_CURVE = 100
 
 GAINS = [
     {
+        'P': int(1400),
+        'I': int(1500),
+        'D': int(0),
+    },
+    {
+        'P': int(1800),
+        'I': int(1800),
+        'D': int(1000),
+    },
+    {
         'P': int(850),
         'I': int(1000),
         'D': int(0),
     },
     {
-        'P': int(850),
-        'I': int(2000),
+        'P': int(2000),
+        'I': int(1500),
         'D': int(500),
-    },
-    {
-        'P': int(850),
-        'I': int(1000),
-        'D': int(0),
-    },
-    {
-        'P': int(850),
-        'I': int(500),
-        'D': int(0.0),
     }
 ]

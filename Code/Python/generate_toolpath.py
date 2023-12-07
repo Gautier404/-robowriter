@@ -5,7 +5,10 @@ This file contains a function and tests for processing a scaled 2D drawing into 
 
 import numpy as np
 from constants import PEN_LIFT_MM, MAX_STEP_MM, HOME_POSITION_CARTESIAN, TABLE_HEIGHT_MM
-from inverse_kinematics import generate_link_angles
+from inverse_kinematics import generate_link_angles, DRAWING_BOUNDS
+from tqdm import tqdm
+from fit_path import fit_path
+
 
 def interpolate_toolpath(toolpath: np.array)-> np.array:
     """
@@ -21,42 +24,76 @@ def interpolate_toolpath(toolpath: np.array)-> np.array:
         a 2D numpy array of the smoothed x, y, z coordinates of the pen tip in mm 
         in the base coordinate frame. ex: [[x1, y1, z1], [x2, y2, z2], [x3, y3, z3]]
     """
-    interpolated_toolpath = np.array(HOME_POSITION_CARTESIAN, dtype=float) # start at home position
-    last_point = interpolated_toolpath
-    for i in range(1, toolpath.shape[0]):
+    max_step_squared = MAX_STEP_MM**2
+    i = 1
+    while i < toolpath.shape[0]:
         # calculate the distance between the current point and the previous point
-        distance = np.sqrt(np.sum((toolpath[i] - last_point)**2))
+        distance_squared = np.sum((toolpath[i] - toolpath[i-1])**2)
 
+        # if the distance between the current point and the previous point is less than the max step clip the point
+        if distance_squared < max_step_squared:
+            toolpath = np.delete(toolpath, i, 0)
+            i -= 1
 
         # if the distance between the current point and the previous point is greater than the max step interpolate between them
-        if distance > MAX_STEP_MM:
-            # calculate the number of points to interpolate between the current point and the previous point
-            num_points = int(np.ceil(distance / MAX_STEP_MM))
-
-            # calculate the step size for each dimension
-            step_size = (toolpath[i] - last_point) / num_points
-
-            # interpolate between the current point and the previous point
-            for j in range(num_points):
-                interpolated_toolpath = np.vstack((interpolated_toolpath, last_point + step_size * j))
-        # if the distance between the current point and the previous point is less than the max step clip the point
-        elif distance < MAX_STEP_MM:
-            print(distance)
-            for j in range(i, toolpath.shape[0]):
-                # calculate the distance between the current point and the previous point
-                distance = np.sqrt(np.sum((toolpath[j] - last_point)**2))
-                if distance > MAX_STEP_MM:
-                    i = j
-                    break
+        elif distance_squared > max_step_squared:
+            num_points = int(np.ceil(np.sqrt(distance_squared) / MAX_STEP_MM))
+            interpolated_points = np.linspace(toolpath[i-1], toolpath[i], num_points+1)
+            toolpath = np.insert(toolpath, i, interpolated_points, axis=0)
+            i += num_points
         
-        last_point = interpolated_toolpath[-1,:]
-            
+        i += 1
+    
+    return toolpath
 
 
-    # end at home position
-    interpolated_toolpath = np.vstack((interpolated_toolpath, HOME_POSITION_CARTESIAN))
 
-    return interpolated_toolpath
+    # # initialize interpolated toolpath to be same size as toolpath
+    # interpolated_toolpath_length = 100000
+    # interpolated_toolpath = np.zeros((interpolated_toolpath_length,3))
+    # interpolated_toolpaths = [interpolated_toolpath] # list of interpolated toolpaths
+    # interpolated_toolpath_loc = 0 # index of the next point in the interpolated toolpath
+    # last_point = toolpath[0]
+    # max_step_squared = MAX_STEP_MM**2
+
+    # for i in tqdm(range(1, toolpath.shape[0])):
+    #     # calculate the distance between the current point and the previous point
+    #     distance_squared = np.sum((toolpath[i] - last_point)**2)
+
+
+    #     # if the distance between the current point and the previous point is greater than the max step interpolate between them
+    #     if distance_squared > max_step_squared:
+    #         # calculate the number of points to interpolate between the current point and the previous point
+    #         num_points = int(np.ceil(np.sqrt(distance_squared) / MAX_STEP_MM))
+
+    #         # calculate the step size for each dimension
+    #         step_size = (toolpath[i] - last_point) / num_points
+
+    #         # interpolate between the current point and the previous point
+    #         for j in tqdm(range(num_points)):
+    #             last_point += step_size
+    #             # if index is out of bounds add a new interpolated toolpath
+    #             if interpolated_toolpath_loc >= interpolated_toolpath_length:
+    #                 interpolated_toolpath = np.zeros((interpolated_toolpath_length,3))
+    #                 interpolated_toolpaths.append(interpolated_toolpath)
+    #                 interpolated_toolpath_loc = 0
+
+    #             interpolated_toolpath[interpolated_toolpath_loc] = last_point
+    #             interpolated_toolpath_loc += 1
+
+    #     # if the distance between the current point and the previous point is less than the max step clip the point
+    #     elif distance_squared < max_step_squared:
+    #         for j in range(i, toolpath.shape[0]):
+    #             # calculate the distance between the current point and the previous point
+    #             distance_squared = np.sum((toolpath[j] - last_point)**2)
+    #             if distance_squared > MAX_STEP_MM:
+    #                 i = j
+    #                 break
+    
+    # remove information after the last point (interpolated_toolpath_loc is the index of the last point + 1)
+    interpolated_toolpath = interpolated_toolpath[:interpolated_toolpath_loc]
+
+    return np.concatenate(interpolated_toolpaths)
 
 
 def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
@@ -75,7 +112,7 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
     toolpath_3d = np.array(HOME_POSITION_CARTESIAN, dtype=float) # start at home position
 
     # add in z coordinates and the movement between drawing positions
-    for path in toolpath:
+    for path in tqdm(toolpath):
         # add z coordinates to each path
         zeros_column = np.zeros((path.shape[0], 1)) + TABLE_HEIGHT_MM
         path_3d = np.hstack((path, zeros_column))
@@ -88,6 +125,7 @@ def generate_cartesian_toolpath(toolpath: np.array)-> np.array:
         
         # append the 3d path to the 3d toolpath
         toolpath_3d = np.vstack((toolpath_3d, path_3d))
+
     
     # end at home position
     toolpath_3d = np.vstack((toolpath_3d, HOME_POSITION_CARTESIAN))
@@ -111,8 +149,8 @@ def generate_angular_toolpath(cartesian_toolpath: np.array):
 
 
 if __name__ == "__main__":
-    toolpath = np.array([[[0, 0], [100, 100]], [[100, 200], [200, 200]]], dtype=float)
-    consolidated_toolpath = np.concatenate(toolpath) 
+    toolpath = np.array([[[0, 0], [100, 100], [100, 200], [200, 200]]], dtype=float)
+    scaled_toolpath = fit_path(toolpath, DRAWING_BOUNDS)
     interpolated_toolpath = generate_cartesian_toolpath(toolpath)
 
     # plot the original and interploated toolpath in 3D using plotly
@@ -120,9 +158,9 @@ if __name__ == "__main__":
 
     fig = go.Figure()
     fig.add_trace(go.Scatter3d(x=interpolated_toolpath[:,0], y=interpolated_toolpath[:,1], z=interpolated_toolpath[:,2], mode='markers', name = 'Interpolated Toolpath', marker=dict(color="blue", size=2)))
-    fig.add_trace(go.Scatter3d(x=consolidated_toolpath[:,0], y=consolidated_toolpath[:,1], z=np.zeros(consolidated_toolpath.shape[0]), mode='markers', name = 'Original Toolpath'))
+    fig.add_trace(go.Scatter3d(x=toolpath[:,0], y=toolpath[:,1], z=np.zeros(toolpath.shape[0]), mode='markers', name = 'Original Toolpath'))
     fig.show()
 
     # test generate angular toolpath function
-    angular_toolpath = generate_angular_toolpath(interpolated_toolpath)
-    print(angular_toolpath)
+    # angular_toolpath = generate_angular_toolpath(interpolated_toolpath)
+    # print(angular_toolpath)

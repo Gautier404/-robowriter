@@ -1,6 +1,7 @@
 import numpy as np
 from constants import *
 from animate_arm import animate_arm
+from tqdm import tqdm
 
 def generate_link_angles(pen_position: np.array):
     """
@@ -85,11 +86,12 @@ def generate_angular_toolpath(cartesian_toolpath: np.array):
     """
     angular_toolpath = np.zeros((len(cartesian_toolpath), 4))
     for i, position in enumerate(cartesian_toolpath):
+
         angular_toolpath[i] = generate_link_angles(position)
     return angular_toolpath
 
 if __name__ == "__main__":
-    home_cartesian = [160, 0, 60]
+    home_cartesian = [115, 0, 54]
     home_degrees = generate_link_angles(home_cartesian)
     print(home_degrees)
 
