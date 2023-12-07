@@ -86,7 +86,7 @@ print("Press any key to continue to path execution or ESC to cancel")
 if ord(getch()) == ESC_CH:
     exit()
 print("Initializing motors...")
-COM_PORT = 'COM3'
+COM_PORT = 'COM5'
 controller = MotorController(COM_PORT, MOTOR_IDS)
 controller.connect_dynamixel()
 controller.write_motor_positions(HOME_POSITION_BITS)
@@ -103,3 +103,11 @@ print("Do you want to disconnect the motors? (y)")
 if input() == "y":
     print("Disconnecting motors...")
     controller.disconnect()
+
+
+# Save toolpath to file
+print("Do you want to save the toolpath to a file? (y)")
+if input() == "y":
+    print("Saving toolpath...")
+    np.savetxt("toolpath.txt", bit_commands, fmt='%d')
+    print("Toolpath saved to toolpath.txt")

@@ -6,7 +6,7 @@ L0 = 118.8          # mm  [BASE TO AXIS 2 LENGTH] (need to verify)
 L2 = 140            # mm
 L3 = 140            # mm
 L4 = 39         # mm
-L5 = 59          # mm  [PEN EXTENTION LENGTH]
+L5 = 65          # mm  [PEN EXTENTION LENGTH]
 
 THETA_5 =  50.25      # degrees
 
