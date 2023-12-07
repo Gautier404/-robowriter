@@ -34,34 +34,37 @@ fitted_toolpath = fit_path(toolpath, DRAWING_BOUNDS)
 consolidated_toolpath = np.concatenate(toolpath)
 consolidated_fitted_toolpath = np.concatenate(fitted_toolpath)
 
-print("Displaying scaled toolpath...")
-# Create figure
-scaled_toolpaths = go.Figure()
-
-# Plot original toolpath
-scaled_toolpaths.add_trace(go.Scatter(x=consolidated_toolpath[:,0], y=consolidated_toolpath[:,1], mode='lines', name='Original Toolpath'))
-
-# Plot bounds
-scaled_toolpaths.add_trace(go.Scatter(x=DRAWING_BOUNDS[:,0], y=DRAWING_BOUNDS[:,1], mode='markers', name='Bounds'))
-
-# Plot scaled toolpath
-scaled_toolpaths.add_trace(go.Scatter(x=consolidated_fitted_toolpath[:,0], y=consolidated_fitted_toolpath[:,1], mode='lines', name='Scaled Toolpath'))
-
-# Set layout
-scaled_toolpaths.update_layout(title='Scaled Toolpath Plot',
-                    showlegend=True)
-
-scaled_toolpaths.show()
-
 # Generate 3d toolpath.
 print("Generating 3d toolpath...")
 cartesian_toolpath = generate_cartesian_toolpath(fitted_toolpath)
 
 # Plot 3d toolpath.
-print("Displaying 3d toolpath...")
-toolpath_3d_fig = go.Figure()
-toolpath_3d_fig.add_trace(go.Scatter3d(x=cartesian_toolpath[:,0], y=cartesian_toolpath[:,1], z=cartesian_toolpath[:,2], mode='markers', name = 'Interpolated Toolpath', marker=dict(color="blue", size=2)))
-toolpath_3d_fig.show()
+# ask whether or not to show the toolpaths:
+print("Do you want to see the toolpaths? (y)")
+if input() == "y":
+    print("Displaying scaled toolpath...")
+    # Create figure
+    scaled_toolpaths = go.Figure()
+
+    # Plot original toolpath
+    scaled_toolpaths.add_trace(go.Scatter(x=consolidated_toolpath[:,0], y=consolidated_toolpath[:,1], mode='lines', name='Original Toolpath'))
+
+    # Plot bounds
+    scaled_toolpaths.add_trace(go.Scatter(x=DRAWING_BOUNDS[:,0], y=DRAWING_BOUNDS[:,1], mode='markers', name='Bounds'))
+
+    # Plot scaled toolpath
+    scaled_toolpaths.add_trace(go.Scatter(x=consolidated_fitted_toolpath[:,0], y=consolidated_fitted_toolpath[:,1], mode='lines', name='Scaled Toolpath'))
+
+    # Set layout
+    scaled_toolpaths.update_layout(title='Scaled Toolpath Plot',
+                        showlegend=True)
+
+    scaled_toolpaths.show()
+
+    print("Displaying 3d toolpath...")
+    toolpath_3d_fig = go.Figure()
+    toolpath_3d_fig.add_trace(go.Scatter3d(x=cartesian_toolpath[:,0], y=cartesian_toolpath[:,1], z=cartesian_toolpath[:,2], mode='markers', name = 'Interpolated Toolpath', marker=dict(color="blue", size=2)))
+    toolpath_3d_fig.show()
 
 # Generate angular toolpath.
 print("Generating angular toolpath...")
@@ -88,7 +91,7 @@ if ord(getch()) == ESC_CH:
     exit()
 print("Initializing motors...")
 COM_PORT = 'COM5'
-controller = MotorController(COM_PORT, MOTOR_IDS)
+controller = MotorController(COM_PORT, MOTOR_IDS, GAINS)
 controller.connect_dynamixel()
 controller.write_motor_positions(HOME_POSITION_BITS)
 controller.enable_all_torque()
@@ -99,7 +102,7 @@ time.sleep(1)
 
 # Run profile
 print("Running profile...")
-SPEED = 3
+SPEED = 1
 positions_bits = controller.get_motor_positions()
 positions_degrees_physical = bits_to_degrees(positions_bits)
 positions_degrees_theoretical = ANGLE_SCALING * (positions_degrees_physical - ANGLE_OFFSET)
@@ -123,24 +126,6 @@ if input() == "y":
     controller.disconnect()
 
 
-<<<<<<< HEAD
-# Save toolpath to file
-print("Do you want to save the toolpath to a file? (y)")
-if input() == "y":
-    print("Saving toolpath...")
-    np.savetxt("toolpath.txt", bit_commands, fmt='%d')
-    print("Toolpath saved to toolpath.txt")
-=======
-#Enter filename to save
-answer = input("Do you want to save the toolpath to a file? (y)")
-if answer == "y":
-    filename = input("Enter file name")
-    print("Saving toolpath... ")
-    np.savetxt(filename+"_input_toolpath.txt", cartesian_toolpath, fmt = '%d')
-    np.savetxt(file_name+"_output_toolpath.txt", output_toolpath, fmt = '%d')
-    print("files saved")
-
-
 post_review_3d = go.Figure()
 
 # Plot original toolpath
@@ -160,14 +145,24 @@ post_review_angles = go.Figure()
 
 x_output = np.linspace(0, output_angles.shape[0], output_angles.shape[0])*SPEED
 x_input = np.linspace(0, angular_toolpath_model.shape[0], angular_toolpath_model.shape[0])
-post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,0], name="Theta_1_out"))
-post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,1], name="Theta_2_out"))
-post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,2], name="Theta_3_out"))
-post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,3], name="Theta_4_out"))
 post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,0], name="Theta_1_in"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,0], name="Theta_1_out"))
 post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,1], name="Theta_2_in"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,1], name="Theta_2_out"))
 post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,2], name="Theta_3_in"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,2], name="Theta_3_out"))
 post_review_angles.add_trace(go.Scatter(x = x_input,  y = angular_toolpath_model[:,3], name="Theta_4_in"))
+post_review_angles.add_trace(go.Scatter(x = x_output,  y = output_angles[:,3], name="Theta_4_out"))
 
+post_review_angles.update_layout(title='Post Review Angles')
 post_review_angles.show()
->>>>>>> 47c44772fdddfeeab4b59c9b3d40b59153be3da2
+
+
+#Enter filename to save
+answer = input("Do you want to save the toolpath to a file? (y)")
+if answer == "y":
+    filename = input("Enter file name\n")
+    print("Saving toolpath... ")
+    np.savetxt("./Code/Python/data/"+filename+"_input_toolpath.txt", cartesian_toolpath, fmt = '%d')
+    np.savetxt("./Code/Python/data/"+filename+"_output_toolpath.txt", output_toolpath, fmt = '%d')
+    print("files saved")

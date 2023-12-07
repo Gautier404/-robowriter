@@ -31,8 +31,6 @@
 
 import os
 
-from dynamixel_sdk import *                    # Uses Dynamixel SDK library
-
 if os.name == 'nt':
     import msvcrt
     def getch():
@@ -49,7 +47,7 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-
+from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 
 # Control table address
 ADDR_PRO_TORQUE_ENABLE      = 64               # Control table address is different in Dynamixel model

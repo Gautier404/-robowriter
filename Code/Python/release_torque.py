@@ -2,7 +2,7 @@
 from motor_controller import MotorController
 from constants import MOTOR_IDS
 
-COM_PORT = 'COM3'
+COM_PORT = 'COM5'
 
 controller = MotorController(COM_PORT, MOTOR_IDS)
 controller.connect_dynamixel()

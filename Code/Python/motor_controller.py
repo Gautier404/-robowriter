@@ -2,6 +2,7 @@ from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 import os
 import time
 import numpy as np
+from constants import GAINS, DEGREES_TO_BITS, BITS_TO_DEGREES
 
 if os.name == 'nt':
     import msvcrt
@@ -24,6 +25,10 @@ TORQUE_ENABLE_ADDRESS      = 64               # Control table address is differe
 GOAL_POSITION_ADDRESS      = 116
 PRESENT_POSITION_ADDRESS   = 132
 
+POSITION_P_GAIN_ADDRESS    = 84
+POSITION_I_GAIN_ADDRESS    = 82
+POSITION_D_GAIN_ADDRESS    = 80
+
 # Protocol version
 PROTOCOL_VERSION            = 2.0               # See which protocol version is used in the Dynamixel
 
@@ -38,12 +43,10 @@ DXL_MINIMUM_POSITION_VALUE  = 0                 # Minimum position limit
 DXL_MAXIMUM_POSITION_VALUE  = 4095              # Maximum position limit
 DXL_MOVING_STATUS_THRESHOLD = 1                 # Dynamixel moving status threshold
 
-BITS_TO_DEGREES = 360 / 4096
-DEGREES_TO_BITS = 4096 / 360
 
 class MotorController:
     """Class for simplifying the control of multiple dynamixel motors"""
-    def __init__(self, port: str = 'COM5', motor_ids: np.array = np.array([5])) -> None:
+    def __init__(self, port: str = 'COM5', motor_ids: np.array = np.array([5]), gains: list = []) -> None:
         """
         Initialize the motor controller
         parameters:
@@ -53,9 +56,11 @@ class MotorController:
         self.port_handler = PortHandler(port)
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
         self.motor_ids = motor_ids
+        self.gains = gains
 
         self.group_bulk_read = GroupBulkRead(self.port_handler, self.packet_handler)
         self.group_bulk_write = GroupBulkWrite(self.port_handler, self.packet_handler)
+        
     
     def connect_dynamixel(self) -> None:
         """Connect to the dynamixel motors"""
@@ -83,6 +88,28 @@ class MotorController:
             if dxl_addparam_result != True:
                 print("[ID:%03d] groupBulkRead addparam failed" % motor_id)
                 quit()
+        
+        # Set gains if specified
+        if self.gains != []:
+            for i, motor_id in enumerate(self.motor_ids):
+                print("Setting gains for motor:",motor_id,"P:", self.gains[i]['P'], "I:",  self.gains[i]['I'], "D:", self.gains[i]['D'])
+                dxl_comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler, motor_id, POSITION_P_GAIN_ADDRESS, self.gains[i]['P'])
+                if dxl_comm_result != COMM_SUCCESS:
+                    print("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+                elif dxl_error != 0:
+                    print("%s" % self.packet_handler.getRxPacketError(dxl_error))
+                dxl_comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler, motor_id, POSITION_I_GAIN_ADDRESS, self.gains[i]['I'])
+                if dxl_comm_result != COMM_SUCCESS:
+                    print("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+                elif dxl_error != 0:
+                    print("%s" % self.packet_handler.getRxPacketError(dxl_error))
+                dxl_comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler, motor_id, POSITION_D_GAIN_ADDRESS, self.gains[i]['D'])
+                if dxl_comm_result != COMM_SUCCESS:
+                    print("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+                elif dxl_error != 0:
+                    print("%s" % self.packet_handler.getRxPacketError(dxl_error))
+                time.sleep(0.1)
+
 
 
     def disconnect(self)-> None:
@@ -239,7 +266,7 @@ if __name__ == '__main__':
     motors.enable_all_torque()
     positions = motors.get_motor_positions()
     for i in range(0,100):
-        motors.write_motor_positions(positions-i)
+        #motors.write_motor_positions(positions-i)
         print(motors.get_motor_positions())
         time.sleep(0.1)
 
