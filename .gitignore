@@ -2,3 +2,5 @@
 venv/
 # Python bytecode cache
 __pycache__/
+# Logs
+Code/Python/data/

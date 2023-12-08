@@ -38,6 +38,7 @@ consolidated_fitted_toolpath = np.concatenate(fitted_toolpath)
 print("Generating 3d toolpath...")
 cartesian_toolpath = generate_cartesian_toolpath(fitted_toolpath)
 
+
 # Plot 3d toolpath.
 # ask whether or not to show the toolpaths:
 print("Do you want to see the toolpaths? (y)")
@@ -66,6 +67,13 @@ if input() == "y":
     toolpath_3d_fig.add_trace(go.Scatter3d(x=cartesian_toolpath[:,0], y=cartesian_toolpath[:,1], z=cartesian_toolpath[:,2], mode='markers', name = 'Interpolated Toolpath', marker=dict(color="blue", size=2)))
     toolpath_3d_fig.show()
 
+#Enter filename to save
+answer = input("Do you want to save the toolpath data to a file? (y)")
+if answer == "y":
+    print("Saving data... ")
+    np.savetxt("./Code/Python/data/"+file_name+"_input_toolpath.txt", cartesian_toolpath, fmt = '%d')
+    print("files saved")
+
 # Generate angular toolpath.
 print("Generating angular toolpath...")
 angular_toolpath_model = generate_angular_toolpath(cartesian_toolpath)
@@ -87,7 +95,7 @@ bit_commands = degrees_to_bits(angular_toolpath_physical)
 
 # Initialize dynamixel motors
 
-SPEED = 1
+SPEED = 2
 
 print("Press any key to continue to path execution or ESC to cancel")
 if ord(getch()) == ESC_CH:
@@ -187,10 +195,10 @@ post_review_angles.show()
 
 
 #Enter filename to save
-answer = input("Do you want to save the toolpath to a file? (y)")
+answer = input("Do you want to save the output data to a file? (y)")
 if answer == "y":
     filename = input("Enter file name\n")
-    print("Saving toolpath... ")
+    print("Saving data... ")
     np.savetxt("./Code/Python/data/"+filename+"_input_toolpath.txt", cartesian_toolpath, fmt = '%d')
     np.savetxt("./Code/Python/data/"+filename+"_output_toolpath.txt", output_toolpath, fmt = '%d')
     print("files saved")

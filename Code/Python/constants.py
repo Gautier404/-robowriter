@@ -5,7 +5,7 @@ L0 = 118.8          # mm  [BASE TO AXIS 2 LENGTH] (need to verify)
 L2 = 140            # mm
 L3 = 140            # mm
 L4 = 39         # mm
-L5 = 55          # mm  [PEN EXTENTION LENGTH]
+L5 = 63          # mm  [PEN EXTENTION LENGTH]
 
 THETA_5 =  50.25      # degrees
 
@@ -41,11 +41,11 @@ HOME_POSITION_BITS = ((HOME_POSITION_DEGREES_MODEL*ANGLE_SCALING + ANGLE_OFFSET)
 
 # [300, 190], [130.29, -190] <-  these are pretty good max bounds
 # [[300, 130], [130.29, -130]] <- these are the bounds we used for Drew's notebook paper
-DRAWING_BOUNDS = np.array([[300, 130], [130.29, -130]]) # The bounds of the drawing area in mm in the base coordinate frame.
+DRAWING_BOUNDS = np.array([[250, 130], [130.29, -130]]) # The bounds of the drawing area in mm in the base coordinate frame.
 
 MOTOR_IDS = [1, 2, 3, 4]                                # The motor ids for the motors we are using.
 ESC_CH = 0x1b                                           # The escape character used to exit the program.
-TABLE_HEIGHT_MM = -2                                  #  The height of the table in mm in the base coordinate frame.
+TABLE_HEIGHT_MM = -4                                  #  The height of the table in mm in the base coordinate frame.
 
 POINTS_IN_CURVE = 100
 
