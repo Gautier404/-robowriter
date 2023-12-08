@@ -20,11 +20,19 @@ def fit_path(flat_toolpath, bounds: np.array) -> np.array:
     """
 
     # find the min and max x and y values of the toolpath
-    consolidated_toolpath = np.concatenate(flat_toolpath) 
-    x_min_tp = min(consolidated_toolpath[:,0])
-    x_max_tp = max(consolidated_toolpath[:,0])
-    y_min_tp = min(consolidated_toolpath[:,1])
-    y_max_tp = max(consolidated_toolpath[:,1])
+    consolidated_toolpath = np.concatenate(flat_toolpath)
+    
+    # if the toolpath is 2D
+    if len(consolidated_toolpath.shape) == 2:
+        x_min_tp = min(consolidated_toolpath[:,0])
+        x_max_tp = max(consolidated_toolpath[:,0])
+        y_min_tp = min(consolidated_toolpath[:,1])
+        y_max_tp = max(consolidated_toolpath[:,1])
+    else:
+        x_min_tp = min(flat_toolpath[:,0])
+        x_max_tp = max(flat_toolpath[:,0])
+        y_min_tp = min(flat_toolpath[:,1])
+        y_max_tp = max(flat_toolpath[:,1])
 
     # find the min and max x and y values of the drawing area
     x_min = min(bounds[:,0])

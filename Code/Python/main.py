@@ -82,7 +82,15 @@ angular_toolpath_model = generate_angular_toolpath(cartesian_toolpath)
 print("Do you want to play the animation? (y)")
 if input() == "y":
     print("Generating animation...")
-    animate_arm(angular_toolpath_model, cartesian_toolpath)
+    # downsample the toolpath to make the animation run faster
+    angular_toolpath_length = angular_toolpath_model.shape[0]
+    max_steps = 500
+    if angular_toolpath_length > max_steps:
+        angular_tool_path_animation = angular_toolpath_model[::int(angular_toolpath_length/max_steps)]
+        cartesian_toolpath_animation = cartesian_toolpath[::int(angular_toolpath_length/max_steps)]
+        animate_arm(angular_tool_path_animation, cartesian_toolpath_animation)
+    else:
+        animate_arm(angular_toolpath_model, cartesian_toolpath)
 else:
     print("Skipping animation...")
 
@@ -95,7 +103,7 @@ bit_commands = degrees_to_bits(angular_toolpath_physical)
 
 # Initialize dynamixel motors
 
-SPEED = 2
+SPEED = 1
 
 print("Press any key to continue to path execution or ESC to cancel")
 if ord(getch()) == ESC_CH:
